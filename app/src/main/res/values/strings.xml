@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">冰与火维基</string>
+    <string name="valar_morghulis">Valar Morghulis</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_search">搜索</string>
+    <string name="action_settings">设置</string>
+
+    <string name="person">人物</string>
+    <string name="house">家族</string>
+    <string name="history">历史</string>
+    <string name="site">地理</string>
+    <string name="night_mode">夜间模式</string>
+
+    <string name="search_hint">Search</string>
+</resources>

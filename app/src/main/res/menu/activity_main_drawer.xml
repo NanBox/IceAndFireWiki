@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_person"
+            android:checked="true"
+            android:icon="@drawable/menu_person"
+            android:title="@string/person" />
+        <item
+            android:id="@+id/nav_house"
+            android:icon="@drawable/menu_house"
+            android:title="@string/house" />
+        <item
+            android:id="@+id/nav_history"
+            android:icon="@drawable/menu_history"
+            android:title="@string/history" />
+        <item
+            android:id="@+id/nav_castles"
+            android:icon="@drawable/menu_castle"
+            android:title="@string/site" />
+        <item
+            android:id="@+id/nav_night"
+            android:checkable="false"
+            android:icon="@drawable/menu_bulb"
+            android:title="@string/night_mode"
+            app:actionLayout="@layout/menu_switch" />
+    </group>
+
+</menu>
