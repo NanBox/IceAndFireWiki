@@ -25,7 +25,6 @@ open class BaseActivity : AppCompatActivity() {
     lateinit var mContext: Context
     lateinit var mDayNightHelper: DayNightHelper
     lateinit var mRealm: Realm
-    lateinit var requestServes: RequestServes
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,16 +48,6 @@ open class BaseActivity : AppCompatActivity() {
             Realm.deleteRealm(realmConfig)
             mRealm = Realm.getInstance(realmConfig)
         }
-
-        //初始化Retrofit
-        val retrofit = Retrofit.Builder()
-                .baseUrl(BaseUrl.MY_URL)
-                //增加返回值为String的支持
-                .addConverterFactory(ScalarsConverterFactory.create())
-                //增加返回值为实体类的支持
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-        requestServes = retrofit.create(RequestServes::class.java)
     }
 
 }

@@ -25,12 +25,12 @@ class Js2Java(private val mContext: Context) {
                 .equalTo("id", id)
                 .findFirst()
 
-        if (content != null) {
-            DetailActivity.show(
-                    mContext,
-                    content.name,
-                    content.img,
-                    content.html)
-        }
+//        if (content != null) {
+//            DetailActivity.show(
+//                    mContext,
+//                    content.name,
+//                    content.img,
+//                    content.html)
+//        }
     }
 }

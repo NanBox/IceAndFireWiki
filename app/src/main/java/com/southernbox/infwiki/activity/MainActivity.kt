@@ -14,7 +14,10 @@ import android.support.v4.view.MenuItemCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.SwitchCompat
 import android.util.TypedValue
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.adapter.MainFragmentPagerAdapter
 import com.southernbox.infwiki.entity.ContentDTO
@@ -39,13 +42,21 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     lateinit var switchCompat: SwitchCompat
 
+    companion object {
+        private val TYPE_PERSON = "person"
+        private val TYPE_HOUSE = "house"
+        private val TYPE_HISTORY = "history"
+        private val TYPE_SITE = "site"
+
+        private var currentFirstType = TYPE_PERSON
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initToolbar()
         initDrawerLayout()
         initNavigationView()
-        initRefreshLayout()
         initViewPager(currentFirstType)
     }
 
@@ -84,9 +95,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 if (content != null) {
                     DetailActivity.show(
                             mContext,
-                            content.name,
-                            content.img,
-                            content.html)
+                            content.name)
                 }
             }, 200)
         })
@@ -141,15 +150,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     /**
-     * 初始化SwipeRefreshLayout
-     */
-    private fun initRefreshLayout() {
-        app_bar.swipe_refresh_layout.setColorSchemeResources(R.color.colorPrimaryDark)
-//        val refreshListener = SwipeRefreshLayout.OnRefreshListener { loadFragmentData() }
-//        app_bar.swipe_refresh_layout.setOnRefreshListener(refreshListener)
-    }
-
-    /**
      * 初始化ViewPager
 
      * @param type 要展示的类型
@@ -159,16 +159,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 .equalTo("type", type)
                 .findAll()
         if (tabList.isNotEmpty()) {
-            //滑动时禁用SwipeRefreshLayout
-            app_bar.view_pager.setOnTouchListener({ _, motionEvent ->
-                val action = motionEvent.action
-                when (action) {
-                    MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> app_bar.swipe_refresh_layout.isEnabled = false
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> app_bar.swipe_refresh_layout.isEnabled = true
-                }
-                false
-            })
-
             initFragments()
             app_bar.view_pager.adapter = MainFragmentPagerAdapter(
                     supportFragmentManager,
@@ -186,38 +176,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             MainFragment.newInstance(it.type, it.title)
         }
     }
-
-//    /**
-//     * 加载网络数据
-//     */
-//    private fun loadFragmentData() {
-//        val retrofit = Retrofit.Builder()
-//                .baseUrl(BaseUrl.MY_URL)
-//                //增加返回值为Gson的支持(以实体类返回)
-//                .addConverterFactory(GsonConverterFactory.create())
-//                .build()
-//        val requestServes = retrofit.create(RequestServes::class.java)
-//        val call = requestServes.content
-//        call.enqueue(object : Callback<List<ContentDTO>> {
-//            override fun onResponse(call: Call<List<ContentDTO>>,
-//                                    response: retrofit2.Response<List<ContentDTO>>) {
-//                app_bar.swipe_refresh_layout.isRefreshing = false
-//                val list = response.body()
-//                if (list != null) {
-//                    //缓存到数据库
-//                    mRealm.beginTransaction()
-//                    mRealm.copyToRealmOrUpdate(list)
-//                    mRealm.commitTransaction()
-//                }
-//                fragmentList.filter { it.isAdded }.forEach { it.showData() }
-//            }
-//
-//            override fun onFailure(call: Call<List<ContentDTO>>, t: Throwable) {
-//                app_bar.swipe_refresh_layout.isRefreshing = false
-//                ToastUtil.show(mContext, "网络连接失败")
-//            }
-//        })
-//    }
 
     /**
      * 展示一个切换动画
@@ -418,14 +376,5 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
         return true
-    }
-
-    companion object {
-        private val TYPE_PERSON = "person"
-        private val TYPE_HOUSE = "house"
-        private val TYPE_HISTORY = "history"
-        private val TYPE_SITE = "site"
-
-        private var currentFirstType = TYPE_PERSON
     }
 }

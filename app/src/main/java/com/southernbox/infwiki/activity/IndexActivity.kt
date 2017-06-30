@@ -7,9 +7,9 @@ import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
 import android.view.animation.AnimationUtils
 import com.southernbox.infwiki.R
-import com.southernbox.infwiki.entity.ContentDTO
 import com.southernbox.infwiki.entity.Tab
 import com.southernbox.infwiki.entity.TabDTO
+import com.southernbox.infwiki.util.RequestUtil
 import com.southernbox.infwiki.util.ToastUtil
 import kotlinx.android.synthetic.main.activity_index.*
 import retrofit2.Call
@@ -24,7 +24,6 @@ class IndexActivity : BaseActivity() {
 
     var animationComplete = false
     var loadTabComplete = false
-//    var loadContentComplete = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,14 +57,13 @@ class IndexActivity : BaseActivity() {
         SystemClock.sleep(200)
         tv_index.startAnimation(animation)
         loadTabData()
-//        loadContentData()
     }
 
     /**
      * 获取标签数据
      */
     private fun loadTabData() {
-        val call = requestServes.tab
+        val call = RequestUtil.myRequestServes.tab
         call.enqueue(object : Callback<List<Tab>> {
             override fun onResponse(call: Call<List<Tab>>,
                                     response: retrofit2.Response<List<Tab>>) {
@@ -94,41 +92,8 @@ class IndexActivity : BaseActivity() {
         })
     }
 
-//    /**
-//     * 获取内容数据
-//     */
-//    private fun loadContentData() {
-//        val call = requestServes.content
-//        call.enqueue(object : Callback<List<ContentDTO>> {
-//            override fun onResponse(call: Call<List<ContentDTO>>,
-//                                    response: retrofit2.Response<List<ContentDTO>>) {
-//                val contentList = response.body()
-//                if (contentList != null) {
-//                    //缓存到数据库
-//                    mRealm.beginTransaction()
-//                    mRealm.copyToRealmOrUpdate(contentList)
-//                    mRealm.commitTransaction()
-//                }
-//                loadContentComplete = true
-//                goMainPage()
-//            }
-//
-//            override fun onFailure(call: Call<List<ContentDTO>>, t: Throwable) {
-//                val contentList = mRealm.where(ContentDTO::class.java).findAll()
-//                //有缓存数据可正常跳转，没有则提示点击重试
-//                if (contentList != null) {
-//                    ToastUtil.show(mContext, "网络连接失败")
-//                    loadContentComplete = true
-//                    goMainPage()
-//                } else {
-//                    netError()
-//                }
-//            }
-//        })
-//    }
-
     private fun goMainPage() {
-        if (animationComplete && loadTabComplete ) {
+        if (animationComplete && loadTabComplete) {
             startActivity(Intent(this@IndexActivity,
                     MainActivity::class.java))
             finish()

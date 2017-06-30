@@ -1,11 +1,10 @@
 package com.southernbox.infwiki.fragment
 
 
-import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
 import android.util.TypedValue
@@ -16,17 +15,13 @@ import com.southernbox.infwiki.R
 import com.southernbox.infwiki.adapter.MainAdapter
 import com.southernbox.infwiki.entity.Page
 import com.southernbox.infwiki.entity.WikiResponse
-import com.southernbox.infwiki.util.BaseUrl
-import com.southernbox.infwiki.util.RequestServes
+import com.southernbox.infwiki.util.RequestUtil
 import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.android.synthetic.main.item_list.view.*
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.*
 
 /**
@@ -36,34 +31,16 @@ import java.util.*
 
 class MainFragment : Fragment() {
 
-    var mContext: Context? = null
-    var type: String? = null
-    var title: String? = null
-    var adapter: MainAdapter? = null
-    //    private val contentList = ArrayList<ContentDTO>()
+    lateinit var type: String
+    lateinit var title: String
+    lateinit var adapter: MainAdapter
     var pageList = ArrayList<Page>()
-    //    var mRealm: Realm? = null
-    lateinit var retrofit: Retrofit
-    lateinit var requestServes: RequestServes
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mContext = activity
         val bundle = arguments
         type = bundle.getString("type")
         title = bundle.getString("title")
-//        Realm.init(context)
-//        val realmConfig = RealmConfiguration.Builder().build()
-//        mRealm = Realm.getInstance(realmConfig)
-        retrofit = Retrofit.Builder()
-                .baseUrl(BaseUrl.WIKI_URL)
-//                .baseUrl("http://zh.asoiaf.wikia.com/")
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-//                .client(getOkHttpClient())
-                .build()
-        requestServes = retrofit.create(RequestServes::class.java)
-
     }
 
     override fun onCreateView(inflater: LayoutInflater?,
@@ -74,13 +51,24 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         initView()
-        getData()
+        initRefreshLayout()
     }
 
     private fun initView() {
-        recycler_view.layoutManager = StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL)
+        recycler_view.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         adapter = MainAdapter(activity, pageList)
         recycler_view.adapter = adapter
+    }
+
+    /**
+     * 初始化SwipeRefreshLayout
+     */
+    private fun initRefreshLayout() {
+        swipe_refresh_layout.setColorSchemeResources(R.color.colorPrimaryDark)
+        val refreshListener = SwipeRefreshLayout.OnRefreshListener { getData() }
+        swipe_refresh_layout.setOnRefreshListener(refreshListener)
+        swipe_refresh_layout.post({ getData() })
+        swipe_refresh_layout.isRefreshing = true
     }
 
     /**
@@ -90,7 +78,7 @@ class MainFragment : Fragment() {
         if (isRemoving) {
             return
         }
-        val call = requestServes.getCategoryMembers("Category:" + title)
+        val call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + title)
         call.enqueue(object : Callback<WikiResponse> {
             override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
                 if (response.body() != null) {
@@ -109,15 +97,16 @@ class MainFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
-
+                swipe_refresh_layout.isRefreshing = false
             }
         })
     }
 
     fun getImage(titles: String) {
-        val call = requestServes.getPageImages(titles)
+        val call = RequestUtil.wikiRequestServes.getPageImages(titles)
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
+                swipe_refresh_layout.isRefreshing = false
                 if (response.body() != null) {
                     val jsonObject = JSONObject(response.body())
                     val pageObject = jsonObject.optJSONObject("query").optJSONObject("pages")
@@ -137,56 +126,53 @@ class MainFragment : Fragment() {
                             }
                         }
                     }
-                    adapter!!.notifyDataSetChanged()
+                    adapter.notifyDataSetChanged()
                 }
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
-
+                swipe_refresh_layout.isRefreshing = false
             }
         })
     }
 
     fun refreshUI() {
-        if (isRemoving) {
+        if (!isAdded) {
             return
         }
-        if (mContext != null) {
-            val theme = mContext!!.theme
-            val pagerBackground = TypedValue()
-            theme.resolveAttribute(R.attr.pagerBackground, pagerBackground, true)
-            val colorBackground = TypedValue()
-            theme.resolveAttribute(R.attr.colorBackground, colorBackground, true)
-            val darkTextColor = TypedValue()
-            theme.resolveAttribute(R.attr.darkTextColor, darkTextColor, true)
+        val theme = context.theme
+        val pagerBackground = TypedValue()
+        theme.resolveAttribute(R.attr.pagerBackground, pagerBackground, true)
+        val colorBackground = TypedValue()
+        theme.resolveAttribute(R.attr.colorBackground, colorBackground, true)
+        val darkTextColor = TypedValue()
+        theme.resolveAttribute(R.attr.darkTextColor, darkTextColor, true)
 
-            //更新背景颜色
-            fl_content.setBackgroundResource(pagerBackground.resourceId)
-            //更新Item的背景及字体颜色
-            val childCount = recycler_view.childCount
-            for (position in 0..childCount - 1) {
-                val item = recycler_view.getChildAt(position)
-                item.ll_content.setBackgroundResource(colorBackground.resourceId)
-                item.tv_name.setTextColor(
-                        ContextCompat.getColor(mContext!!, darkTextColor.resourceId))
-                item.tv_desc.setTextColor(
-                        ContextCompat.getColor(mContext!!, darkTextColor.resourceId))
-            }
-            //让 RecyclerView 缓存在 Pool 中的 Item 失效
-            val recyclerViewClass = RecyclerView::class.java
-            try {
-                val declaredField = recyclerViewClass.getDeclaredField("mRecycler")
-                declaredField.isAccessible = true
-                val declaredMethod = Class.forName(RecyclerView.Recycler::class.java.name)
-                        .getDeclaredMethod("clear")
-                declaredMethod.isAccessible = true
-                declaredMethod.invoke(declaredField.get(recycler_view))
-                val recycledViewPool = recycler_view.recycledViewPool
-                recycledViewPool.clear()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
+        //更新背景颜色
+        fl_content.setBackgroundResource(pagerBackground.resourceId)
+        //更新Item的背景及字体颜色
+        val childCount = recycler_view.childCount
+        for (position in 0..childCount - 1) {
+            val item = recycler_view.getChildAt(position)
+            item.ll_content.setBackgroundResource(colorBackground.resourceId)
+            item.tv_name.setTextColor(
+                    ContextCompat.getColor(context, darkTextColor.resourceId))
+            item.tv_desc.setTextColor(
+                    ContextCompat.getColor(context, darkTextColor.resourceId))
+        }
+        //让 RecyclerView 缓存在 Pool 中的 Item 失效
+        val recyclerViewClass = RecyclerView::class.java
+        try {
+            val declaredField = recyclerViewClass.getDeclaredField("mRecycler")
+            declaredField.isAccessible = true
+            val declaredMethod = Class.forName(RecyclerView.Recycler::class.java.name)
+                    .getDeclaredMethod("clear")
+            declaredMethod.isAccessible = true
+            declaredMethod.invoke(declaredField.get(recycler_view))
+            val recycledViewPool = recycler_view.recycledViewPool
+            recycledViewPool.clear()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

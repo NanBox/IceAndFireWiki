@@ -4,21 +4,20 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.ActivityOptionsCompat
-import android.support.v4.content.ContextCompat
 import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
-import android.webkit.WebSettings
-import com.bumptech.glide.Glide
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.js.Js2Java
-import com.southernbox.infwiki.util.BaseUrl
-import com.southernbox.infwiki.util.ToastUtil
+import com.southernbox.infwiki.util.RequestUtil
 import kotlinx.android.synthetic.main.activity_detail.*
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.Response
+import java.net.URLDecoder
 
 /**
  * Created SouthernBox on 2016/3/27.
@@ -28,29 +27,33 @@ import retrofit2.Callback
 @SuppressLint("SetJavaScriptEnabled")
 class DetailActivity : BaseActivity() {
 
-    lateinit var title: String
-    lateinit var img: String
-    lateinit var html: String
+    var titleList = ArrayList<String>()
+
+    companion object {
+
+        fun show(context: Context, title: String?) {
+            val intent = Intent(context, DetailActivity::class.java)
+            val bundle = Bundle()
+            bundle.putString("title", title)
+            intent.putExtras(bundle)
+            context.startActivity(intent)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
         val bundle = intent.extras
-        title = bundle.getString("title")
-        img = bundle.getString("img")
-        html = bundle.getString("html")
+        val title = bundle.getString("title")
+        web_view.setWebViewClient(MyWebViewClient())
         initView()
-        initData()
+        showContent(title)
     }
 
-    private fun initView() {
+    fun initView() {
         val theme = mContext.theme
         val lightTextColor = TypedValue()
         theme.resolveAttribute(R.attr.lightTextColor, lightTextColor, true)
-        collapsing_toolbar.setCollapsedTitleTextColor(ContextCompat
-                .getColor(mContext, lightTextColor.resourceId))
-        collapsing_toolbar.setExpandedTitleTextColor(ContextCompat
-                .getColorStateList(mContext, lightTextColor.resourceId))
         web_view.settings.javaScriptEnabled = true
         web_view.addJavascriptInterface(Js2Java(this), "Android")
         // 支持多窗口
@@ -71,39 +74,6 @@ class DetailActivity : BaseActivity() {
                 }
             }
         })
-    }
-
-    private fun initData() {
-        toolbar.title = title
-
-        Glide
-                .with(this)
-                .load(BaseUrl.WIKI_URL + img)
-                .override(480, 270)
-                .crossFade()
-                .into(image_view)
-
-        val call = requestServes.get(html)
-        call.enqueue(object : Callback<String> {
-            override fun onResponse(call: Call<String>, response: retrofit2.Response<String>) {
-                if (response.body() != null) {
-                    var htmlData: String = response.body().toString()
-                    if (mDayNightHelper.isNight) {
-                        htmlData = htmlData.replace("p {",
-                                "p {color:#9F9F9F;")
-                        htmlData = htmlData.replace("<body>", "<body bgcolor=\"#4F4F4F\">")
-                    }
-                    web_view.settings.cacheMode = WebSettings.LOAD_DEFAULT
-                    web_view.loadDataWithBaseURL(
-                            "file:///android_asset/", htmlData, "text/html", "utf-8", null)
-                }
-            }
-
-            override fun onFailure(call: Call<String>, t: Throwable) {
-                ToastUtil.show(mContext, "网络连接失败，请重试")
-                web_view.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
-            }
-        })
 
         setSupportActionBar(toolbar)
         val actionBar = supportActionBar
@@ -114,35 +84,86 @@ class DetailActivity : BaseActivity() {
         })
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            web_view.visibility = View.GONE
-            onBackPressed()
-        }
-        return true
+    fun setTitle() {
+        toolbar.title = titleList[titleList.lastIndex]
     }
 
-    companion object {
+    fun showContent(title: String) {
+        val call = RequestUtil.wikiRequestServes.getContent(title)
+        progress_bar.visibility = View.VISIBLE
+        call.enqueue(object : Callback<String> {
+            override fun onResponse(call: Call<String>?, response: Response<String>) {
+                val jsonObject = JSONObject(response.body())
+                val pageObject = jsonObject.getJSONObject("query").getJSONObject("pages")
+                val keys = pageObject.keys()
+                if (keys.hasNext()) {
+                    val key = keys.next()
+                    val page = pageObject.getJSONObject(key)
+                    val htmlData = page.getJSONArray("revisions").getJSONObject(0).getString("*")
+                    web_view.loadDataWithBaseURL("file:///android_asset/", htmlData, "text/html", "utf-8", null)
+                    titleList.add(title)
+                    setTitle()
+                }
+                progress_bar.visibility = View.GONE
+            }
 
-        fun show(context: Context, options: ActivityOptionsCompat,
-                 title: String, img: String, html: String) {
-            val intent = Intent(context, DetailActivity::class.java)
-            val bundle = Bundle()
-            bundle.putString("title", title)
-            bundle.putString("img", img)
-            bundle.putString("html", html)
-            intent.putExtras(bundle)
-            ActivityCompat.startActivity(context, intent, options.toBundle())
+            override fun onFailure(call: Call<String>?, t: Throwable?) {
+                progress_bar.visibility = View.GONE
+            }
+        })
+    }
+
+    fun showImage(title: String) {
+        val call = RequestUtil.wikiRequestServes.getImage(title)
+        progress_bar.visibility = View.VISIBLE
+        call.enqueue(object : Callback<String> {
+            override fun onResponse(call: Call<String>?, response: Response<String>) {
+                val jsonObject = JSONObject(response.body())
+                val pageObject = jsonObject.getJSONObject("query").getJSONObject("pages")
+                val keys = pageObject.keys()
+                if (keys.hasNext()) {
+                    val key = keys.next()
+                    val page = pageObject.getJSONObject(key)
+                    val imgUrl = page.getJSONObject("thumbnail").getString("source")
+                    web_view.loadUrl(imgUrl)
+                    titleList.add("图片")
+                    setTitle()
+                }
+                progress_bar.visibility = View.GONE
+            }
+
+            override fun onFailure(call: Call<String>?, t: Throwable?) {
+                progress_bar.visibility = View.GONE
+            }
+        })
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && web_view.canGoBack()) {
+            web_view.goBack()
+            titleList.removeAt(titleList.lastIndex)
+            setTitle()
+            return true
         }
+        return super.onKeyDown(keyCode, event)
+    }
 
-        fun show(context: Context, title: String?, img: String?, html: String?) {
-            val intent = Intent(context, DetailActivity::class.java)
-            val bundle = Bundle()
-            bundle.putString("title", title)
-            bundle.putString("img", img)
-            bundle.putString("html", html)
-            intent.putExtras(bundle)
-            context.startActivity(intent)
+    inner class MyWebViewClient : WebViewClient() {
+
+        override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            if (url.startsWith("file:///wiki/")) {
+                val title = URLDecoder.decode(url.substring(13), "UTF-8")
+                if (title.startsWith("File:")) {
+                    //暂时无法播放视频
+                    if (!title.endsWith(".video")) {
+                        showImage(title)
+                    }
+                } else {
+                    showContent(title)
+                }
+                return true
+            }
+            return false
         }
     }
 }
