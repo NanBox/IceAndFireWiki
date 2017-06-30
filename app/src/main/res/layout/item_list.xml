@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
+    android:layout_margin="5dp"
     android:foreground="?attr/selectableItemBackground"
     app:cardElevation="5dp">
 
@@ -36,20 +36,9 @@
                 android:id="@+id/tv_name"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
                 android:textColor="?attr/darkTextColor"
                 android:textSize="20sp"
                 tools:text="韦德" />
-
-            <TextView
-                android:id="@+id/tv_desc"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:maxLines="1"
-                android:textColor="?attr/darkTextColor"
-                android:textSize="12sp"
-                tools:text="MVP" />
 
         </LinearLayout>
 

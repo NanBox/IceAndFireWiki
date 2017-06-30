@@ -58,12 +58,10 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
 
         var ivImg: ImageView? = null
         var ivName: TextView? = null
-        var ivDesc: TextView? = null
 
         init {
             ivImg = itemView.iv_img
             ivName = itemView.tv_name
-            ivDesc = itemView.tv_desc
         }
 
     }

@@ -97,7 +97,7 @@ class MainFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
-                swipe_refresh_layout.isRefreshing = false
+                stopLoading()
             }
         })
     }
@@ -106,7 +106,7 @@ class MainFragment : Fragment() {
         val call = RequestUtil.wikiRequestServes.getPageImages(titles)
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
-                swipe_refresh_layout.isRefreshing = false
+                stopLoading()
                 if (response.body() != null) {
                     val jsonObject = JSONObject(response.body())
                     val pageObject = jsonObject.optJSONObject("query").optJSONObject("pages")
@@ -131,9 +131,15 @@ class MainFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
-                swipe_refresh_layout.isRefreshing = false
+                stopLoading()
             }
         })
+    }
+
+    fun stopLoading() {
+        if (swipe_refresh_layout != null) {
+            swipe_refresh_layout.isRefreshing = false
+        }
     }
 
     fun refreshUI() {
@@ -156,8 +162,6 @@ class MainFragment : Fragment() {
             val item = recycler_view.getChildAt(position)
             item.ll_content.setBackgroundResource(colorBackground.resourceId)
             item.tv_name.setTextColor(
-                    ContextCompat.getColor(context, darkTextColor.resourceId))
-            item.tv_desc.setTextColor(
                     ContextCompat.getColor(context, darkTextColor.resourceId))
         }
         //让 RecyclerView 缓存在 Pool 中的 Item 失效
