@@ -29,12 +29,35 @@ import java.util.*
  * 首页Fragment
  */
 
+@Suppress("NAME_SHADOWING")
 class MainFragment : Fragment() {
 
     lateinit var type: String
     lateinit var title: String
     lateinit var adapter: MainAdapter
     var pageList = ArrayList<Page>()
+    var mCmcontinue = ""
+
+    companion object {
+
+        /**
+         * 获取对应的首页Fragment
+
+         * @param type  一级分类
+         * *
+         *  @param title  分类标题
+         * *
+         * @return 对应的Fragment
+         */
+        fun newInstance(type: String?, title: String?): MainFragment {
+            val fragment = MainFragment()
+            val bundle = Bundle()
+            bundle.putString("type", type)
+            bundle.putString("title", title)
+            fragment.arguments = bundle
+            return fragment
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,13 +84,7 @@ class MainFragment : Fragment() {
         recycler_view.layoutManager = layoutManager
         adapter = MainAdapter(activity, pageList)
         recycler_view.adapter = adapter
-        recycler_view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                //防止第一行顶部留空
-                layoutManager.invalidateSpanAssignments()
-            }
-        })
+        recycler_view.addOnScrollListener(MyScrollListener())
     }
 
     /**
@@ -75,33 +92,55 @@ class MainFragment : Fragment() {
      */
     private fun initRefreshLayout() {
         swipe_refresh_layout.setColorSchemeResources(R.color.colorPrimaryDark)
-        val refreshListener = SwipeRefreshLayout.OnRefreshListener { getData() }
+        val refreshListener = SwipeRefreshLayout.OnRefreshListener {
+            mCmcontinue = ""
+            getData()
+        }
         swipe_refresh_layout.setOnRefreshListener(refreshListener)
         swipe_refresh_layout.post({ getData() })
         swipe_refresh_layout.isRefreshing = true
     }
 
     /**
-     * 展示数据
+     * 获取数据
      */
     fun getData() {
         if (isRemoving) {
             return
         }
-        val call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + title)
+        val call: Call<WikiResponse>
+        if (mCmcontinue.isEmpty()) {
+            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + title)
+        } else {
+            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + title, mCmcontinue)
+        }
         call.enqueue(object : Callback<WikiResponse> {
             override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
                 if (response.body() != null) {
-                    val list = response.body()!!.query.categorymembers
-                    if (list.size > 0) {
-                        pageList.clear()
-                        pageList.addAll(list)
-                        var titles = ""
-                        for (page in list) {
-                            titles += page.title + "|"
+                    val responseBody = response.body()
+                    if (responseBody != null) {
+                        val list = responseBody.query.categorymembers
+                        if (list.size > 0) {
+                            if (mCmcontinue.isEmpty()) {
+                                pageList.clear()
+                            }
+                            pageList.addAll(list)
+                            var titles = ""
+                            for (page in list) {
+                                titles += page.title + "|"
+                            }
+                            titles = titles.substring(0, titles.length - 1)
+                            if (mCmcontinue.isEmpty()) {
+                                getImage(titles, false)
+                            } else {
+                                getImage(titles, true)
+                            }
                         }
-                        titles = titles.substring(0, titles.length - 1)
-                        getImage(titles)
+                        if (responseBody.next != null) {
+                            mCmcontinue = responseBody.next!!.cmcontinue
+                        } else {
+                            mCmcontinue = ""
+                        }
                     }
                 }
             }
@@ -112,7 +151,10 @@ class MainFragment : Fragment() {
         })
     }
 
-    fun getImage(titles: String) {
+    /**
+     * 获取封面图片
+     */
+    fun getImage(titles: String, nextPage: Boolean) {
         val call = RequestUtil.wikiRequestServes.getPageImages(titles)
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
@@ -136,7 +178,11 @@ class MainFragment : Fragment() {
                             }
                         }
                     }
-                    adapter.notifyItemChanged(0, pageList.size)
+                    if (!nextPage) {
+                        adapter.notifyItemChanged(0, pageList.size)
+                    } else {
+                        adapter.notifyItemChanged(adapter.itemCount, pageList.size)
+                    }
                 }
             }
 
@@ -190,24 +236,22 @@ class MainFragment : Fragment() {
         }
     }
 
-    companion object {
+    inner class MyScrollListener : RecyclerView.OnScrollListener() {
 
-        /**
-         * 获取对应的首页Fragment
+        override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+            val layoutManager = recycler_view.layoutManager as StaggeredGridLayoutManager
 
-         * @param type  一级分类
-         * *
-         *  @param title  分类标题
-         * *
-         * @return 对应的Fragment
-         */
-        fun newInstance(type: String?, title: String?): MainFragment {
-            val fragment = MainFragment()
-            val bundle = Bundle()
-            bundle.putString("type", type)
-            bundle.putString("title", title)
-            fragment.arguments = bundle
-            return fragment
+            //防止第一行顶部留空
+            layoutManager.invalidateSpanAssignments()
+
+            when (newState) {
+                RecyclerView.SCROLL_STATE_IDLE ->
+                    if (recycler_view.canScrollVertically(-1) && mCmcontinue.isNotEmpty()) {
+                        getData()
+                    }
+            }
+
         }
     }
 }

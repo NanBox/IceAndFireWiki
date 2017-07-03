@@ -20,6 +20,7 @@ import retrofit2.Callback
  * 启动页面
  */
 
+@Suppress("NAME_SHADOWING")
 class IndexActivity : BaseActivity() {
 
     var animationComplete = false

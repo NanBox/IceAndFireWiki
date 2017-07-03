@@ -1,25 +1,20 @@
 package com.southernbox.infwiki.activity
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.util.DayNightHelper
-import com.southernbox.infwiki.util.RequestServes
-import com.southernbox.infwiki.util.BaseUrl
-
 import io.realm.Realm
 import io.realm.RealmConfiguration
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.converter.scalars.ScalarsConverterFactory
 
 /**
  * Created by nanquan.lin on 2017/2/20 0020.
  * Activity基类
  */
 
+@SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity() {
 
     lateinit var mContext: Context

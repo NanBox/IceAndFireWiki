@@ -3,6 +3,7 @@ package com.southernbox.infwiki.activity
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.KeyEvent
@@ -24,6 +25,7 @@ import java.net.URLDecoder
  * 详情页面
  */
 
+@Suppress("NAME_SHADOWING")
 @SuppressLint("SetJavaScriptEnabled")
 class DetailActivity : BaseActivity() {
 
@@ -161,9 +163,13 @@ class DetailActivity : BaseActivity() {
                 } else {
                     showContent(title)
                 }
-                return true
+            } else {
+                //使用浏览器打开
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(url)
+                startActivity(intent)
             }
-            return false
+            return true
         }
     }
 }
