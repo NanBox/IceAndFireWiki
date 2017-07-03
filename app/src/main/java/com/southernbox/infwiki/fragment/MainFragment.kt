@@ -137,7 +137,7 @@ class MainFragment : Fragment() {
                             }
                         }
                         if (responseBody.next != null) {
-                            mCmcontinue = responseBody.next!!.cmcontinue
+                            mCmcontinue = responseBody.next.cmcontinue
                         } else {
                             mCmcontinue = ""
                         }

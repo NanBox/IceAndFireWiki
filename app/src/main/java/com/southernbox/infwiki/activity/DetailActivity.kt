@@ -1,6 +1,5 @@
 package com.southernbox.infwiki.activity
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -11,7 +10,7 @@ import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.southernbox.infwiki.R
-import com.southernbox.infwiki.js.Js2Java
+import com.southernbox.infwiki.entity.WebData
 import com.southernbox.infwiki.util.RequestUtil
 import kotlinx.android.synthetic.main.activity_detail.*
 import org.json.JSONObject
@@ -26,10 +25,9 @@ import java.net.URLDecoder
  */
 
 @Suppress("NAME_SHADOWING")
-@SuppressLint("SetJavaScriptEnabled")
 class DetailActivity : BaseActivity() {
 
-    var titleList = ArrayList<String>()
+    var webList = ArrayList<WebData>()
 
     companion object {
 
@@ -47,23 +45,24 @@ class DetailActivity : BaseActivity() {
         setContentView(R.layout.activity_detail)
         val bundle = intent.extras
         val title = bundle.getString("title")
-        web_view.setWebViewClient(MyWebViewClient())
         initView()
-        showContent(title)
+        getContent(title)
     }
 
     fun initView() {
         val theme = mContext.theme
         val lightTextColor = TypedValue()
         theme.resolveAttribute(R.attr.lightTextColor, lightTextColor, true)
-        web_view.settings.javaScriptEnabled = true
-        web_view.addJavascriptInterface(Js2Java(this), "Android")
-        // 支持多窗口
-        web_view.settings.setSupportMultipleWindows(true)
         // 开启 DOM storage API 功能
         web_view.settings.domStorageEnabled = true
         // 开启 Application Caches 功能
         web_view.settings.setAppCacheEnabled(true)
+        // 支持缩放
+        web_view.settings.setSupportZoom(true)
+        web_view.settings.builtInZoomControls = true
+        web_view.settings.displayZoomControls = false
+        // 重定向
+        web_view.setWebViewClient(MyWebViewClient())
 
         toolbar.post({
             //设置Toolbar的图标颜色
@@ -86,14 +85,11 @@ class DetailActivity : BaseActivity() {
         })
     }
 
-    fun setTitle() {
-        toolbar.title = titleList[titleList.lastIndex]
-    }
-
-    fun showContent(title: String) {
+    fun getContent(title: String) {
         val call = RequestUtil.wikiRequestServes.getContent(title)
         progress_bar.visibility = View.VISIBLE
         call.enqueue(object : Callback<String> {
+
             override fun onResponse(call: Call<String>?, response: Response<String>) {
                 val jsonObject = JSONObject(response.body())
                 val pageObject = jsonObject.getJSONObject("query").getJSONObject("pages")
@@ -102,11 +98,11 @@ class DetailActivity : BaseActivity() {
                     val key = keys.next()
                     val page = pageObject.getJSONObject(key)
                     val htmlData = page.getJSONArray("revisions").getJSONObject(0).getString("*")
-                    web_view.loadDataWithBaseURL("file:///android_asset/", htmlData, "text/html", "utf-8", null)
-                    titleList.add(title)
-                    setTitle()
+                    webList.add(WebData(title, htmlData, WebData.Type.HTML))
+                    showPage()
+                } else {
+                    progress_bar.visibility = View.GONE
                 }
-                progress_bar.visibility = View.GONE
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
@@ -115,10 +111,11 @@ class DetailActivity : BaseActivity() {
         })
     }
 
-    fun showImage(title: String) {
+    fun getImage(title: String) {
         val call = RequestUtil.wikiRequestServes.getImage(title)
         progress_bar.visibility = View.VISIBLE
         call.enqueue(object : Callback<String> {
+
             override fun onResponse(call: Call<String>?, response: Response<String>) {
                 val jsonObject = JSONObject(response.body())
                 val pageObject = jsonObject.getJSONObject("query").getJSONObject("pages")
@@ -127,11 +124,11 @@ class DetailActivity : BaseActivity() {
                     val key = keys.next()
                     val page = pageObject.getJSONObject(key)
                     val imgUrl = page.getJSONObject("thumbnail").getString("source")
-                    web_view.loadUrl(imgUrl)
-                    titleList.add("图片")
-                    setTitle()
+                    webList.add(WebData(title, imgUrl, WebData.Type.URL))
+                    showPage()
+                } else {
+                    progress_bar.visibility = View.GONE
                 }
-                progress_bar.visibility = View.GONE
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
@@ -140,11 +137,28 @@ class DetailActivity : BaseActivity() {
         })
     }
 
+    fun showPage() {
+        if (webList.size <= 0) {
+            return
+        }
+        val webData = webList[webList.lastIndex]
+        if (webData.type == WebData.Type.URL) {
+            web_view.loadUrl(webData.data)
+        } else {
+            web_view.loadDataWithBaseURL(
+                    "file:///android_asset/",
+                    webList[webList.lastIndex].data,
+                    "text/html",
+                    "utf-8",
+                    null)
+        }
+        toolbar.title = webData.title
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && web_view.canGoBack()) {
-            web_view.goBack()
-            titleList.removeAt(titleList.lastIndex)
-            setTitle()
+        if (keyCode == KeyEvent.KEYCODE_BACK && webList.size > 1) {
+            webList.removeAt(webList.lastIndex)
+            showPage()
             return true
         }
         return super.onKeyDown(keyCode, event)
@@ -158,10 +172,10 @@ class DetailActivity : BaseActivity() {
                 if (title.startsWith("File:")) {
                     //暂时无法播放视频
                     if (!title.endsWith(".video")) {
-                        showImage(title)
+                        getImage(title)
                     }
                 } else {
-                    showContent(title)
+                    getContent(title)
                 }
             } else {
                 //使用浏览器打开
@@ -170,6 +184,11 @@ class DetailActivity : BaseActivity() {
                 startActivity(intent)
             }
             return true
+        }
+
+        override fun onPageFinished(view: WebView?, url: String?) {
+            super.onPageFinished(view, url)
+            progress_bar.visibility = View.GONE
         }
     }
 }

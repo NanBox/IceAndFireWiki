@@ -20,7 +20,6 @@ import android.view.View
 import android.view.ViewGroup
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.adapter.MainFragmentPagerAdapter
-import com.southernbox.infwiki.entity.ContentDTO
 import com.southernbox.infwiki.entity.Tab
 import com.southernbox.infwiki.fragment.MainFragment
 import com.southernbox.infwiki.util.DayNightHelper
@@ -78,27 +77,27 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         search_view.setEllipsize(true)
         search_view.setHint("搜索")
         //设置搜索结果提示
-        val contentList = mRealm.where(ContentDTO::class.java).findAll()
-        val contentNames = arrayOfNulls<String>(contentList.size)
-        for (i in contentList.indices) {
-            contentNames[i] = contentList[i].name
-        }
-        search_view.setSuggestions(contentNames)
-        //监听搜索结果点击事件
-        search_view.setOnSuggestionClickListener({ name ->
-            //延时以展示水波纹效果
-            search_view.postDelayed({
-                search_view.closeSearch()
-                val content = mRealm.where(ContentDTO::class.java)
-                        .equalTo("name", name)
-                        .findFirst()
-                if (content != null) {
-                    DetailActivity.show(
-                            mContext,
-                            content.name)
-                }
-            }, 200)
-        })
+//        val contentList = mRealm.where(ContentDTO::class.java).findAll()
+//        val contentNames = arrayOfNulls<String>(contentList.size)
+//        for (i in contentList.indices) {
+//            contentNames[i] = contentList[i].name
+//        }
+//        search_view.setSuggestions(contentNames)
+//        //监听搜索结果点击事件
+//        search_view.setOnSuggestionClickListener({ name ->
+//            //延时以展示水波纹效果
+//            search_view.postDelayed({
+//                search_view.closeSearch()
+//                val content = mRealm.where(ContentDTO::class.java)
+//                        .equalTo("name", name)
+//                        .findFirst()
+//                if (content != null) {
+//                    DetailActivity.show(
+//                            mContext,
+//                            content.name)
+//                }
+//            }, 200)
+//        })
     }
 
     /**

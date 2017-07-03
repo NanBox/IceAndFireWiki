@@ -8,7 +8,6 @@ import android.view.animation.Animation.AnimationListener
 import android.view.animation.AnimationUtils
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.Tab
-import com.southernbox.infwiki.entity.TabDTO
 import com.southernbox.infwiki.util.RequestUtil
 import com.southernbox.infwiki.util.ToastUtil
 import kotlinx.android.synthetic.main.activity_index.*
@@ -80,7 +79,7 @@ class IndexActivity : BaseActivity() {
             }
 
             override fun onFailure(call: Call<List<Tab>>, t: Throwable) {
-                val tabList = mRealm.where(TabDTO::class.java).findAll()
+                val tabList = mRealm.where(Tab::class.java).findAll()
                 //有缓存数据可正常跳转，没有则提示点击重试
                 if (tabList != null) {
                     ToastUtil.show(mContext, "网络连接失败")

@@ -9,12 +9,12 @@ import com.google.gson.annotations.SerializedName
 
 data class WikiResponse(
         @SerializedName("continue")
-        var next: Continue?,
-        var query: Query
+        val next: Continue?,
+        val query: Query
 ) {
-    data class Continue(var cmcontinue: String,
+    data class Continue(val cmcontinue: String,
                         @SerializedName("continue")
-                        var next: String)
+                        val next: String)
 
-    data class Query(var categorymembers: ArrayList<Page>)
+    data class Query(val categorymembers: ArrayList<Page>)
 }
