@@ -58,9 +58,9 @@ class DetailActivity : BaseActivity() {
         // 开启 Application Caches 功能
         web_view.settings.setAppCacheEnabled(true)
         // 支持缩放
-        web_view.settings.setSupportZoom(true)
-        web_view.settings.builtInZoomControls = true
-        web_view.settings.displayZoomControls = false
+//        web_view.settings.setSupportZoom(true)
+//        web_view.settings.builtInZoomControls = true
+//        web_view.settings.displayZoomControls = false
         // 重定向
         web_view.setWebViewClient(MyWebViewClient())
 
@@ -98,7 +98,12 @@ class DetailActivity : BaseActivity() {
                     val key = keys.next()
                     val page = pageObject.getJSONObject(key)
                     val htmlData = page.getJSONArray("revisions").getJSONObject(0).getString("*")
-                    webList.add(WebData(title, htmlData, WebData.Type.HTML))
+                    if (webList.size > 0) {
+                        //保存当前页面的滚动位置
+                        val webData = webList[webList.lastIndex]
+                        webData.scrollY = web_view.scrollY
+                    }
+                    webList.add(WebData(title, htmlData, 0, WebData.Type.HTML))
                     showPage()
                 } else {
                     progress_bar.visibility = View.GONE
@@ -124,7 +129,12 @@ class DetailActivity : BaseActivity() {
                     val key = keys.next()
                     val page = pageObject.getJSONObject(key)
                     val imgUrl = page.getJSONObject("thumbnail").getString("source")
-                    webList.add(WebData(title, imgUrl, WebData.Type.URL))
+                    if (webList.size > 0) {
+                        //保存当前页面的滚动位置
+                        val webData = webList[webList.lastIndex]
+                        webData.scrollY = web_view.scrollY
+                    }
+                    webList.add(WebData("图片", imgUrl, 0, WebData.Type.URL))
                     showPage()
                 } else {
                     progress_bar.visibility = View.GONE
@@ -210,6 +220,12 @@ class DetailActivity : BaseActivity() {
             super.onPageFinished(view, url)
             progress_bar.visibility = View.GONE
             web_view.visibility = View.VISIBLE
+
+            if (webList.size <= 0) {
+                return
+            }
+            val webData = webList[webList.lastIndex]
+            web_view.scrollTo(0, webData.scrollY)
         }
     }
 }
