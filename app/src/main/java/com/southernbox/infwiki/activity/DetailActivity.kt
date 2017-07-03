@@ -145,9 +145,29 @@ class DetailActivity : BaseActivity() {
         if (webData.type == WebData.Type.URL) {
             web_view.loadUrl(webData.data)
         } else {
+            var htmlData = webData.data
+            if (mDayNightHelper.isNight) {
+                htmlData = "<head>" +
+                        "<style type=\"text/css\">" +
+                        "a{color:#607d8b;}" + //超链接颜色
+                        "</style>" +
+                        "</head>" +
+                        "<body bgcolor=\"#4F4F4F\">" + //背景颜色
+                        "<font color=\"#9F9F9F\">" + //字体颜色
+                        htmlData +
+                        "</font>" +
+                        "</body>"
+            } else {
+                htmlData = "<head>" +
+                        "<style type=\"text/css\">" +
+                        "a{color:#607d8b;}" + //超链接颜色
+                        "</style>" +
+                        "</head>" +
+                        htmlData
+            }
             web_view.loadDataWithBaseURL(
                     "file:///android_asset/",
-                    webList[webList.lastIndex].data,
+                    htmlData,
                     "text/html",
                     "utf-8",
                     null)
@@ -189,6 +209,7 @@ class DetailActivity : BaseActivity() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             progress_bar.visibility = View.GONE
+            web_view.visibility = View.VISIBLE
         }
     }
 }
