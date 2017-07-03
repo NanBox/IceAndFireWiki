@@ -9,23 +9,26 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.GlideDrawable
+import com.bumptech.glide.request.animation.GlideAnimation
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.activity.DetailActivity
 import com.southernbox.infwiki.entity.Page
 import kotlinx.android.synthetic.main.item_list.view.*
+
 
 /**
  * Created by SouthernBox on 2017/6/25 0025.
  * 首页列表适配器
  */
 
-class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
+class MainAdapter(content: Context, list: ArrayList<Page>) : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
 
-    var mContext: Context? = null
-    var mList: List<Page>? = null
+    val mContext: Context = content
+    var mList = ArrayList<Page>()
 
     init {
-        mContext = content
         mList = list
     }
 
@@ -35,34 +38,56 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
     }
 
     override fun onBindViewHolder(holder: MainAdapter.MyViewHolder, position: Int) {
-        val content = mList!![position]
+        val page = mList[position]
 
-        holder.ivName!!.text = content.title
+        holder.ivName.text = page.title
 
-        Glide
-                .with(mContext)
-                .load(content.coverImg)
-                .crossFade()
-                .into(holder.ivImg)
+        //设置图片高度
+        if (page.coverImgWidth > 0 && page.coverImgHeight > 0) {
+            Glide
+                    .with(mContext)
+                    .load(page.coverImg)
+                    .override(page.coverImgWidth, page.coverImgHeight)
+                    .crossFade()
+                    .into(ImageViewTarget(page, holder.ivImg))
+        } else {
+            Glide
+                    .with(mContext)
+                    .load(page.coverImg)
+                    .crossFade()
+                    .into(ImageViewTarget(page, holder.ivImg))
+        }
 
-        holder.itemView.setOnClickListener { _ -> onItemClick(content) }
+        holder.itemView.setOnClickListener { _ -> onItemClick(page) }
     }
 
-    override fun getItemCount(): Int = if (mList != null) (mList as List<Page>).size else 0
+    override fun getItemCount(): Int = mList.size
 
     fun onItemClick(content: Page) {
-        DetailActivity.Companion.show(mContext!!, content.title!!)
+        DetailActivity.Companion.show(mContext, content.title!!)
     }
 
     class MyViewHolder(itemView: View) : ViewHolder(itemView) {
+        val ivImg: ImageView = itemView.iv_img
+        val ivName: TextView = itemView.tv_name
+    }
 
-        var ivImg: ImageView? = null
-        var ivName: TextView? = null
+    inner class ImageViewTarget(page: Page, view: ImageView) : GlideDrawableImageViewTarget(view) {
 
-        init {
-            ivImg = itemView.iv_img
-            ivName = itemView.tv_name
+        var mPage: Page = page
+
+        override fun onResourceReady(resource: GlideDrawable?, animation: GlideAnimation<in GlideDrawable>?) {
+            super.onResourceReady(resource, animation)
+            if (mPage.coverImgHeight > 0 && mPage.coverImgHeight > 0) {
+                return
+            }
+            val viewWidth = view.measuredWidth
+            if (resource != null) {
+                val scale = viewWidth / resource.minimumWidth
+                val viewHeight = (resource.minimumHeight * scale)
+                mPage.coverImgHeight = viewHeight
+                mPage.coverImgWidth = viewWidth
+            }
         }
-
     }
 }

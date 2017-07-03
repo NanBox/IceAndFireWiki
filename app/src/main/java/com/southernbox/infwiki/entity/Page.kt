@@ -13,7 +13,8 @@ open class Page : RealmObject() {
     var ns: String? = null
     var title: String? = null
     var coverImg: String? = null
+    var coverImgWidth: Int = 0
+    var coverImgHeight: Int = 0
     var revisions: String? = null
-
 
 }

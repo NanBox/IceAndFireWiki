@@ -55,9 +55,19 @@ class MainFragment : Fragment() {
     }
 
     private fun initView() {
-        recycler_view.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        //静止 item 交换位置
+        layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
+        recycler_view.layoutManager = layoutManager
         adapter = MainAdapter(activity, pageList)
         recycler_view.adapter = adapter
+        recycler_view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                //防止第一行顶部留空
+                layoutManager.invalidateSpanAssignments()
+            }
+        })
     }
 
     /**
@@ -126,7 +136,7 @@ class MainFragment : Fragment() {
                             }
                         }
                     }
-                    adapter.notifyDataSetChanged()
+                    adapter.notifyItemChanged(0, pageList.size)
                 }
             }
 
