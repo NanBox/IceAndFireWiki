@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:layout_collapseMode="pin"
+            app:navigationIcon="@drawable/ic_action_navigation_close_inverted"
             app:titleTextColor="?attr/lightTextColor" />
 
         <WebView

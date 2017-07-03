@@ -34,7 +34,7 @@ class MainFragment : Fragment() {
 
     lateinit var type: String
     lateinit var title: String
-    lateinit var adapter: MainAdapter
+    lateinit var mAdapter: MainAdapter
     var pageList = ArrayList<Page>()
     var mCmcontinue = ""
 
@@ -82,8 +82,8 @@ class MainFragment : Fragment() {
         //静止 item 交换位置
         layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
         recycler_view.layoutManager = layoutManager
-        adapter = MainAdapter(activity, pageList)
-        recycler_view.adapter = adapter
+        mAdapter = MainAdapter(activity, pageList)
+        recycler_view.adapter = mAdapter
         recycler_view.addOnScrollListener(MyScrollListener())
     }
 
@@ -179,9 +179,10 @@ class MainFragment : Fragment() {
                         }
                     }
                     if (!nextPage) {
-                        adapter.notifyItemChanged(0, pageList.size)
+                        mAdapter.notifyItemChanged(0, pageList.size)
                     } else {
-                        adapter.notifyItemChanged(adapter.itemCount, pageList.size)
+                        mAdapter.notifyItemRangeInserted(mAdapter.itemCount, pageList.size)
+                        mAdapter.notifyItemChanged(mAdapter.itemCount, pageList.size)
                     }
                 }
             }

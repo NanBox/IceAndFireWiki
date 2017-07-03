@@ -49,7 +49,7 @@ class MainAdapter(content: Context, list: ArrayList<Page>) : RecyclerView.Adapte
                     .load(page.coverImg)
                     .override(page.coverImgWidth, page.coverImgHeight)
                     .crossFade()
-                    .into(ImageViewTarget(page, holder.ivImg))
+                    .into(holder.ivImg)
         } else {
             Glide
                     .with(mContext)
@@ -78,9 +78,6 @@ class MainAdapter(content: Context, list: ArrayList<Page>) : RecyclerView.Adapte
 
         override fun onResourceReady(resource: GlideDrawable?, animation: GlideAnimation<in GlideDrawable>?) {
             super.onResourceReady(resource, animation)
-            if (mPage.coverImgHeight > 0 && mPage.coverImgHeight > 0) {
-                return
-            }
             val viewWidth = view.measuredWidth
             if (resource != null) {
                 val scale = viewWidth / resource.minimumWidth
