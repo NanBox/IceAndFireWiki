@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.southernbox.infwiki.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,20 +56,23 @@ public class SearchAdapter extends BaseAdapter implements Filterable {
                     // Retrieve the autocomplete results.
                     List<String> searchData = new ArrayList<>();
 
-                    for (String string : suggestions) {
-//                        if (string.toLowerCase().startsWith(constraint.toString().toLowerCase())) {
+//                    for (String string : suggestions) {
+////                        if (string.toLowerCase().startsWith(constraint.toString().toLowerCase())) {
+////                            searchData.add(string);
+////                        }
+//
+//                        //修改源码，下拉列表展示包含关键字的所有结果
+//                        String suggestion = string.toLowerCase().trim();
+//                        String keyword = constraint.toString().toLowerCase().replace(" ", "").trim();
+//                        if (!TextUtils.isEmpty(keyword) &&
+//                                (suggestion.contains(keyword) ||
+//                                        suggestion.replace("·", "").contains(keyword))) {
 //                            searchData.add(string);
 //                        }
+//                    }
 
-                        //修改源码，下拉列表展示包含关键字的所有结果
-                        String suggestion = string.toLowerCase().trim();
-                        String keyword = constraint.toString().toLowerCase().replace(" ", "").trim();
-                        if (!TextUtils.isEmpty(keyword) &&
-                                (suggestion.contains(keyword) ||
-                                        suggestion.replace("·", "").contains(keyword))) {
-                            searchData.add(string);
-                        }
-                    }
+                    //修改源码，下拉列表展示所有结果
+                    searchData.addAll(Arrays.asList(suggestions));
 
                     // Assign the data to the FilterResults
                     filterResults.values = searchData;

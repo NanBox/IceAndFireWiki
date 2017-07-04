@@ -20,13 +20,20 @@ import android.view.View
 import android.view.ViewGroup
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.adapter.MainFragmentPagerAdapter
+import com.southernbox.infwiki.entity.Search
 import com.southernbox.infwiki.entity.Tab
+import com.southernbox.infwiki.entity.WikiResponse
 import com.southernbox.infwiki.fragment.MainFragment
 import com.southernbox.infwiki.util.DayNightHelper
+import com.southernbox.infwiki.util.RequestUtil
 import com.southernbox.infwiki.util.ToastUtil
+import com.southernbox.infwiki.widget.MaterialSearchView.MaterialSearchView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.view.*
 import kotlinx.android.synthetic.main.nav_header_main.view.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.*
 
 /**
@@ -34,14 +41,15 @@ import java.util.*
  * 主页
  */
 
+@Suppress("NAME_SHADOWING")
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-    lateinit var tabList: List<Tab>
-    val fragmentList = ArrayList<MainFragment>()
+    private lateinit var tabList: List<Tab>
+    private val fragmentList = ArrayList<MainFragment>()
+    private lateinit var switchCompat: SwitchCompat
+    private var searchList = ArrayList<Search>()
 
-    lateinit var switchCompat: SwitchCompat
-
-    companion object {
+    private companion object {
         private val TYPE_PERSON = "person"
         private val TYPE_HOUSE = "house"
         private val TYPE_HISTORY = "history"
@@ -54,6 +62,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initToolbar()
+        initSearchView()
         initDrawerLayout()
         initNavigationView()
         initViewPager(currentFirstType)
@@ -64,40 +73,91 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
      */
     private fun initToolbar() {
         setSupportActionBar(app_bar.main_toolbar)
-        val actionBar = supportActionBar
-        actionBar?.setDisplayHomeAsUpEnabled(true)
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         app_bar.main_toolbar.post({
             //设置Toolbar的标题及图标颜色
             app_bar.main_toolbar.title = resources.getString(R.string.person)
             refreshToolbarIcon()
         })
+    }
 
+    /**
+     * 初始化搜索控件
+     */
+    private fun initSearchView() {
         //设置搜索控件
         search_view.setEllipsize(true)
         search_view.setHint("搜索")
-        //设置搜索结果提示
-//        val contentList = mRealm.where(ContentDTO::class.java).findAll()
-//        val contentNames = arrayOfNulls<String>(contentList.size)
-//        for (i in contentList.indices) {
-//            contentNames[i] = contentList[i].name
-//        }
-//        search_view.setSuggestions(contentNames)
-//        //监听搜索结果点击事件
-//        search_view.setOnSuggestionClickListener({ name ->
-//            //延时以展示水波纹效果
-//            search_view.postDelayed({
-//                search_view.closeSearch()
-//                val content = mRealm.where(ContentDTO::class.java)
-//                        .equalTo("name", name)
-//                        .findFirst()
-//                if (content != null) {
-//                    DetailActivity.show(
-//                            mContext,
-//                            content.name)
-//                }
-//            }, 200)
-//        })
+
+        //设置搜索结果
+        search_view.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                //隐藏键盘
+                search_view.hideKeyboard(search_view)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                search_view.dismissSuggestions()
+                if (newText == null || newText.isEmpty()) {
+                    return false
+                }
+                val call = RequestUtil.wikiRequestServes.search(newText)
+                call.enqueue(object : Callback<WikiResponse> {
+
+                    override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
+                        val responseBody = response.body() ?: return
+                        searchList = responseBody.query.search
+                        val searchTitles = Array(searchList.size, { i ->
+                            var searchTitle = searchList[i].title
+                            val category = searchList[i].categorysnippet
+                            if (category != null && category.isNotEmpty()) {
+                                val category = category
+                                        .replace("<span class=\"searchmatch\">", "")
+                                        .replace("</span>", "")
+                                searchTitle += " 「$category」分类"
+                            }
+                            val section = searchList[i].sectionsnippet
+                            if (section != null && section.isNotEmpty()) {
+                                val section = section
+                                        .replace("<span class=\"searchmatch\">", "")
+                                        .replace("</span>", "")
+                                searchTitle += " 「$section」章节"
+                            }
+                            searchTitle
+                        })
+                        search_view.setSuggestions(searchTitles)
+                        search_view.showSuggestions()
+                    }
+
+                    override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
+                    }
+                })
+
+                return true
+            }
+        })
+
+        //监听搜索结果点击事件
+        var clickable = true //防止多次点击
+        search_view.setOnItemClickListener { _, _, position, _ ->
+            if (clickable) {
+                clickable = false
+                //延时以展示水波纹效果
+                search_view.postDelayed({
+                    search_view.closeSearch()
+                    if (searchList.size - 1 >= position) {
+                        DetailActivity.show(
+                                mContext,
+                                searchList[position].title)
+                    }
+                }, 200)
+                search_view.postDelayed({
+                    clickable = true
+                }, 250)
+            }
+        }
     }
 
     /**

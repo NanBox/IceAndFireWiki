@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.Filter;
@@ -179,6 +180,19 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
 
         mSuggestionsListView.setVisibility(GONE);
         setAnimationDuration(AnimationUtil.ANIMATION_DURATION_MEDIUM);
+
+        //
+        mSuggestionsListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                hideKeyboard(MaterialSearchView.this);
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+            }
+        });
     }
 
     private void initSearchView() {
@@ -214,7 +228,8 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     showKeyboard(mSearchSrcTextView);
-                    showSuggestions();
+                    //修改源码，这里不用显示
+//                    showSuggestions();
                 }
             }
         });
@@ -236,7 +251,8 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
             } else if (v == mEmptyBtn) {
                 mSearchSrcTextView.setText(null);
             } else if (v == mSearchSrcTextView) {
-                showSuggestions();
+                //修改源码，不用显示
+//                showSuggestions();
             } else if (v == mTintView) {
                 closeSearch();
             }
@@ -382,9 +398,13 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
      * Call this method to show suggestions list. This shows up when adapter is set. Call {@link #setAdapter(SearchAdapter)} before calling this.
      */
     public void showSuggestions() {
-        if (mAdapter != null && mAdapter.getCount() > 0 && mSuggestionsListView.getVisibility() == GONE) {
+        //修改源码
+        if (mAdapter != null && mSuggestionsListView.getVisibility() == GONE) {
             mSuggestionsListView.setVisibility(VISIBLE);
         }
+//        if (mAdapter != null && mAdapter.getCount() > 0 && mSuggestionsListView.getVisibility() == GONE) {
+//            mSuggestionsListView.setVisibility(VISIBLE);
+//        }
     }
 
     /**
@@ -436,16 +456,17 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
             final SearchAdapter adapter = new SearchAdapter(mContext, suggestions, suggestionIcon, ellipsize);
             setAdapter(adapter);
 
-            setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    if (mOnSuggestionClickListener != null) {
-                        mOnSuggestionClickListener.onSuggestionClick((String) adapter.getItem(position));
-                    } else {
-                        setQuery((String) adapter.getItem(position), submit);
-                    }
-                }
-            });
+            //修改源码，由外部处理点击事件
+//            setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//                @Override
+//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                    if (mOnSuggestionClickListener != null) {
+//                        mOnSuggestionClickListener.onSuggestionClick((String) adapter.getItem(position));
+//                    } else {
+//                        setQuery((String) adapter.getItem(position), submit);
+//                    }
+//                }
+//            });
         } else {
             mTintView.setVisibility(GONE);
         }
@@ -637,11 +658,12 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
 
     @Override
     public void onFilterComplete(int count) {
-        if (count > 0) {
-            showSuggestions();
-        } else {
-            dismissSuggestions();
-        }
+        //修改源码，获取到数据再显示
+//        if (count > 0) {
+//            showSuggestions();
+//        } else {
+//            dismissSuggestions();
+//        }
     }
 
     @Override

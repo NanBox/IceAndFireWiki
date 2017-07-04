@@ -6,5 +6,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <!-- MaterialSearchView -->
     <dimen name="search_icon_padding">12dp</dimen>
-    <dimen name="search_view_text_padding">65dp</dimen>
+    <dimen name="search_view_text_padding">55dp</dimen>
+    <dimen name="search_view_suggest_padding_left">55dp</dimen>
+    <dimen name="search_view_suggest_padding_right">20dp</dimen>
 </resources>

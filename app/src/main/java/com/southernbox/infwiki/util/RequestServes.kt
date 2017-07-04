@@ -14,15 +14,6 @@ import retrofit2.http.Query
 
 interface RequestServes {
 
-    @GET("{url}")
-    fun get(@Path("url") url: String): Call<String>
-
-//    @get:GET("tab.json")
-//    val tab: Call<List<TabDTO>>
-//
-//    @get:GET("content.json")
-//    val content: Call<List<ContentDTO>>
-
     @get:GET("WikiTab.json")
     val tab: Call<List<Tab>>
 
@@ -46,4 +37,7 @@ interface RequestServes {
     @GET("api.php?action=query&prop=pageimages&format=json&pithumbsize=500&pilimit=20")
     fun getPageImages(@Query("titles") titles: String): Call<String>
 
+    //全文搜索
+    @GET("api.php?action=query&list=search&format=json&srnamespace=0&srlimit=50&srprop=titlesnippet|sectionsnippet|categorysnippet")
+    fun search(@Query("srsearch") keyword: String): Call<WikiResponse>
 }

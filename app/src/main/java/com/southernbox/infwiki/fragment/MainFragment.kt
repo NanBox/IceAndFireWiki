@@ -16,6 +16,7 @@ import com.southernbox.infwiki.adapter.MainAdapter
 import com.southernbox.infwiki.entity.Page
 import com.southernbox.infwiki.entity.WikiResponse
 import com.southernbox.infwiki.util.RequestUtil
+import com.southernbox.infwiki.util.ToastUtil
 import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.android.synthetic.main.item_list.view.*
 import org.json.JSONObject
@@ -32,11 +33,11 @@ import java.util.*
 @Suppress("NAME_SHADOWING")
 class MainFragment : Fragment() {
 
-    lateinit var type: String
-    lateinit var title: String
-    lateinit var mAdapter: MainAdapter
-    var pageList = ArrayList<Page>()
-    var mCmcontinue = ""
+    private lateinit var type: String
+    private lateinit var title: String
+    private lateinit var mAdapter: MainAdapter
+    private var pageList = ArrayList<Page>()
+    private var mCmcontinue = ""
 
     companion object {
 
@@ -104,7 +105,7 @@ class MainFragment : Fragment() {
     /**
      * 获取数据
      */
-    fun getData() {
+    private fun getData() {
         if (isRemoving) {
             return
         }
@@ -116,37 +117,34 @@ class MainFragment : Fragment() {
         }
         call.enqueue(object : Callback<WikiResponse> {
             override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
-                if (response.body() != null) {
-                    val responseBody = response.body()
-                    if (responseBody != null) {
-                        val list = responseBody.query.categorymembers
-                        if (list.size > 0) {
-                            if (mCmcontinue.isEmpty()) {
-                                pageList.clear()
-                            }
-                            pageList.addAll(list)
-                            var titles = ""
-                            for (page in list) {
-                                titles += page.title + "|"
-                            }
-                            titles = titles.substring(0, titles.length - 1)
-                            if (mCmcontinue.isEmpty()) {
-                                getImage(titles, false)
-                            } else {
-                                getImage(titles, true)
-                            }
-                        }
-                        if (responseBody.next != null) {
-                            mCmcontinue = responseBody.next.cmcontinue
-                        } else {
-                            mCmcontinue = ""
-                        }
+                val responseBody = response.body() ?: return
+                val list = responseBody.query.categorymembers
+                if (list.size > 0) {
+                    if (mCmcontinue.isEmpty()) {
+                        pageList.clear()
                     }
+                    pageList.addAll(list)
+                    var titles = ""
+                    for (page in list) {
+                        titles += page.title + "|"
+                    }
+                    titles = titles.substring(0, titles.length - 1)
+                    if (mCmcontinue.isEmpty()) {
+                        getImage(titles, false)
+                    } else {
+                        getImage(titles, true)
+                    }
+                }
+                if (responseBody.next != null) {
+                    mCmcontinue = responseBody.next.cmcontinue
+                } else {
+                    mCmcontinue = ""
                 }
             }
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
                 stopLoading()
+                ToastUtil.show(context, "网络连接失败")
             }
         })
     }
@@ -154,46 +152,48 @@ class MainFragment : Fragment() {
     /**
      * 获取封面图片
      */
-    fun getImage(titles: String, nextPage: Boolean) {
+    private fun getImage(titles: String, nextPage: Boolean) {
         val call = RequestUtil.wikiRequestServes.getPageImages(titles)
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
                 stopLoading()
-                if (response.body() != null) {
-                    val jsonObject = JSONObject(response.body())
-                    val pageObject = jsonObject.optJSONObject("query").optJSONObject("pages")
-                    val keys = pageObject.keys()
-                    while (keys.hasNext()) {
-                        val key = keys.next()
-                        val page = pageObject.optJSONObject(key)
-                        val thumbnail = page.optJSONObject("thumbnail")
-                        if (thumbnail != null) {
-                            val title = page.optString("title")
-                            val coverImg = thumbnail.optString("source")
-                            for (mPage in pageList) {
-                                if (title == mPage.title) {
-                                    mPage.coverImg = coverImg
-                                    break
-                                }
+                if (response.body() == null) {
+                    return
+                }
+                val jsonObject = JSONObject(response.body())
+                val pageObject = jsonObject.optJSONObject("query").optJSONObject("pages")
+                val keys = pageObject.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    val page = pageObject.optJSONObject(key)
+                    val thumbnail = page.optJSONObject("thumbnail")
+                    if (thumbnail != null) {
+                        val title = page.optString("title")
+                        val coverImg = thumbnail.optString("source")
+                        for (mPage in pageList) {
+                            if (title == mPage.title) {
+                                mPage.coverImg = coverImg
+                                break
                             }
                         }
                     }
-                    if (!nextPage) {
-                        mAdapter.notifyItemChanged(0, pageList.size)
-                    } else {
-                        mAdapter.notifyItemRangeInserted(mAdapter.itemCount, pageList.size)
-                        mAdapter.notifyItemChanged(mAdapter.itemCount, pageList.size)
-                    }
+                }
+                if (!nextPage) {
+                    mAdapter.notifyItemChanged(0, pageList.size)
+                } else {
+                    mAdapter.notifyItemRangeInserted(mAdapter.itemCount, pageList.size)
+                    mAdapter.notifyItemChanged(mAdapter.itemCount, pageList.size)
                 }
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
                 stopLoading()
+                ToastUtil.show(context, "网络连接失败")
             }
         })
     }
 
-    fun stopLoading() {
+    private fun stopLoading() {
         if (swipe_refresh_layout != null) {
             swipe_refresh_layout.isRefreshing = false
         }

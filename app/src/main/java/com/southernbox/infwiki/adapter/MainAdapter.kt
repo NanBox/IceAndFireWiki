@@ -67,7 +67,7 @@ class MainAdapter(content: Context, list: ArrayList<Page>) : RecyclerView.Adapte
         DetailActivity.Companion.show(mContext, content.title!!)
     }
 
-    class MyViewHolder(itemView: View) : ViewHolder(itemView) {
+    inner class MyViewHolder(itemView: View) : ViewHolder(itemView) {
         val ivImg: ImageView = itemView.iv_img
         val ivName: TextView = itemView.tv_name
     }

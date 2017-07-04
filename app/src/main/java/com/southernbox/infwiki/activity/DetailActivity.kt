@@ -12,6 +12,7 @@ import android.webkit.WebViewClient
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.WebData
 import com.southernbox.infwiki.util.RequestUtil
+import com.southernbox.infwiki.util.ToastUtil
 import kotlinx.android.synthetic.main.activity_detail.*
 import org.json.JSONObject
 import retrofit2.Call
@@ -49,7 +50,7 @@ class DetailActivity : BaseActivity() {
         getContent(title)
     }
 
-    fun initView() {
+    private fun initView() {
         val theme = mContext.theme
         val lightTextColor = TypedValue()
         theme.resolveAttribute(R.attr.lightTextColor, lightTextColor, true)
@@ -85,7 +86,7 @@ class DetailActivity : BaseActivity() {
         })
     }
 
-    fun getContent(title: String) {
+    private fun getContent(title: String) {
         val call = RequestUtil.wikiRequestServes.getContent(title)
         progress_bar.visibility = View.VISIBLE
         call.enqueue(object : Callback<String> {
@@ -112,11 +113,12 @@ class DetailActivity : BaseActivity() {
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
                 progress_bar.visibility = View.GONE
+                ToastUtil.show(mContext, "网络连接失败")
             }
         })
     }
 
-    fun getImage(title: String) {
+    private fun getImage(title: String) {
         val call = RequestUtil.wikiRequestServes.getImage(title)
         progress_bar.visibility = View.VISIBLE
         call.enqueue(object : Callback<String> {
@@ -143,11 +145,12 @@ class DetailActivity : BaseActivity() {
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
                 progress_bar.visibility = View.GONE
+                ToastUtil.show(mContext, "网络连接失败")
             }
         })
     }
 
-    fun showPage() {
+    private fun showPage() {
         if (webList.size <= 0) {
             return
         }

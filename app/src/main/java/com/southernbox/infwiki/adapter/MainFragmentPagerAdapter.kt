@@ -14,8 +14,8 @@ import com.southernbox.infwiki.fragment.MainFragment
 class MainFragmentPagerAdapter(fm: FragmentManager, fragments: List<MainFragment>, tabList: List<Tab>)
     : FragmentStatePagerAdapter(fm) {
 
-    var fragments: List<MainFragment>? = null
-    var tabList: List<Tab>? = null
+    private var fragments: List<MainFragment>? = null
+    private var tabList: List<Tab>? = null
 
     init {
         this.fragments = fragments

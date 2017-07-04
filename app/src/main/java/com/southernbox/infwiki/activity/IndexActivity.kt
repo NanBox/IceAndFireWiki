@@ -22,8 +22,8 @@ import retrofit2.Callback
 @Suppress("NAME_SHADOWING")
 class IndexActivity : BaseActivity() {
 
-    var animationComplete = false
-    var loadTabComplete = false
+    private var animationComplete = false
+    private var loadTabComplete = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

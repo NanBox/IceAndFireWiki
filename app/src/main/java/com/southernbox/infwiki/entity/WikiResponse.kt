@@ -13,8 +13,10 @@ data class WikiResponse(
         val query: Query
 ) {
     data class Continue(val cmcontinue: String,
+                        val sroffset: Int,
                         @SerializedName("continue")
                         val next: String)
 
-    data class Query(val categorymembers: ArrayList<Page>)
+    data class Query(val categorymembers: ArrayList<Page>,
+                     val search: ArrayList<Search>)
 }
