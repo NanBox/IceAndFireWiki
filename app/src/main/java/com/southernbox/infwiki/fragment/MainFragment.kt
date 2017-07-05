@@ -157,6 +157,14 @@ class MainFragment : Fragment() {
                         if (!page.categories.contains(categoryTitle)) {
                             page.categories += categoryTitle + "|"
                         }
+                        val cachePage = mRealm.where(Page::class.java)
+                                .equalTo("pageid", page.pageid)
+                                .findFirst()
+                        if (cachePage == null) {
+                            mRealm.beginTransaction()
+                            mRealm.copyToRealmOrUpdate(page)
+                            mRealm.commitTransaction()
+                        }
                     }
                     titles = titles.substring(0, titles.length - 1)
                     getImage(titles)
@@ -200,12 +208,17 @@ class MainFragment : Fragment() {
                         val cachePage = mRealm.where(Page::class.java)
                                 .equalTo("pageid", pageid)
                                 .findFirst()
-                        if (cachePage.coverImg != coverImg) {
-                            cachePage.coverImg = coverImg
-                            cachePage.coverImgHeight = 0
-                            cachePage.coverImgWidth = 0
+                        if (cachePage != null) {
+                            mRealm.beginTransaction()
+                            mRealm.copyFromRealm(cachePage)
+                            if (cachePage.coverImg != coverImg) {
+                                cachePage.coverImg = coverImg
+                                cachePage.coverImgHeight = 0
+                                cachePage.coverImgWidth = 0
+                            }
+                            mRealm.commitTransaction()
+                            list.add(cachePage)
                         }
-                        list.add(cachePage)
                     }
                 }
 
