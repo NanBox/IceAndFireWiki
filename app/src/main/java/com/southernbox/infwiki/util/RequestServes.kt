@@ -29,7 +29,7 @@ interface RequestServes {
     fun getCategoryMembers(@Query("cmtitle") title: String): Call<WikiResponse>
 
     //获取下一页分类成员页面
-    @GET("api.php?action=query&format=json&list=categorymembers&cmlimit=20&cmsort=timestamp")
+    @GET("api.php?action=query&format=json&list=categorymembers&cmlimit=50&cmsort=timestamp")
     fun getCategoryMembers(@Query("cmtitle") title: String, @Query("cmcontinue") cmcontinue: String): Call<WikiResponse>
 
     //获取页面封面

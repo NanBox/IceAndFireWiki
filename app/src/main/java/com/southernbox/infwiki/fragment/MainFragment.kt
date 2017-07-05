@@ -39,9 +39,10 @@ class MainFragment : Fragment() {
     private lateinit var categoryTitle: String
     private lateinit var mAdapter: MainAdapter
     private lateinit var pageList: List<Page>
+    private lateinit var mRealm: Realm
 
     private var mCmcontinue = ""
-    private val pageSize = 20
+    private val pageSize = 50
 
     companion object {
 
@@ -69,6 +70,7 @@ class MainFragment : Fragment() {
         val bundle = arguments
         type = bundle.getString("type")
         categoryTitle = bundle.getString("categoryTitle")
+        mRealm = Realm.getDefaultInstance()
     }
 
     override fun onCreateView(inflater: LayoutInflater?,
@@ -88,7 +90,6 @@ class MainFragment : Fragment() {
         layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
         recycler_view.layoutManager = layoutManager
         //从数据库读取数据
-        val mRealm = Realm.getDefaultInstance()
         pageList = mRealm.where(Page::class.java)
                 .contains("categories", categoryTitle)
                 .findAll()
@@ -124,6 +125,7 @@ class MainFragment : Fragment() {
         val call: Call<WikiResponse>
         if (mCmcontinue.isNotEmpty()) {
             call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle, mCmcontinue)
+            mCmcontinue = ""
             //显示缓存数据
             val displayItemCount = mAdapter.itemCount
             mAdapter.setMaxItemCount(mAdapter.getMaxItemCount() + pageSize)
@@ -157,7 +159,7 @@ class MainFragment : Fragment() {
                         }
                     }
                     titles = titles.substring(0, titles.length - 1)
-                    getImage(titles, list)
+                    getImage(titles)
                 }
                 if (responseBody.next != null) {
                     mCmcontinue = responseBody.next.cmcontinue
@@ -176,7 +178,7 @@ class MainFragment : Fragment() {
     /**
      * 获取封面图片
      */
-    private fun getImage(titles: String, list: List<Page>) {
+    private fun getImage(titles: String) {
         val call = RequestUtil.wikiRequestServes.getPageImages(titles)
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
@@ -187,24 +189,27 @@ class MainFragment : Fragment() {
                 val queryObject = jsonObject.optJSONObject("query") ?: return
                 val pageObject = queryObject.optJSONObject("pages") ?: return
                 val keys = pageObject.keys()
+                val list = ArrayList<Page>()
                 while (keys.hasNext()) {
                     val key = keys.next()
                     val page = pageObject.optJSONObject(key)
                     val thumbnail = page.optJSONObject("thumbnail")
                     if (thumbnail != null) {
-                        val title = page.optString("title")
+                        val pageid = page.optString("pageid")
                         val coverImg = thumbnail.optString("source")
-                        for (mPage in list) {
-                            if (title == mPage.title) {
-                                mPage.coverImg = coverImg
-                                break
-                            }
+                        val cachePage = mRealm.where(Page::class.java)
+                                .equalTo("pageid", pageid)
+                                .findFirst()
+                        if (cachePage.coverImg != coverImg) {
+                            cachePage.coverImg = coverImg
+                            cachePage.coverImgHeight = 0
+                            cachePage.coverImgWidth = 0
                         }
+                        list.add(cachePage)
                     }
                 }
 
                 //保存到数据库
-                val mRealm = Realm.getDefaultInstance()
                 mRealm.beginTransaction()
                 mRealm.copyToRealmOrUpdate(list)
                 mRealm.commitTransaction()
