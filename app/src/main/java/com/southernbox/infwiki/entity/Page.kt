@@ -14,7 +14,8 @@ open class Page : RealmObject() {
     var ns: Int? = 0
     //页面标题
     var title: String? = null
-    var revisions: String? = null
+    //所属分类
+    var categories: String = ""
     //封面图片
     var coverImg: String? = null
     //封面图片宽度

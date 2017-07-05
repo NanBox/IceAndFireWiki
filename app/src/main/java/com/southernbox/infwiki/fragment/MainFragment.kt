@@ -17,13 +17,13 @@ import com.southernbox.infwiki.entity.Page
 import com.southernbox.infwiki.entity.WikiResponse
 import com.southernbox.infwiki.util.RequestUtil
 import com.southernbox.infwiki.util.ToastUtil
+import io.realm.Realm
 import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.android.synthetic.main.item_list.view.*
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.*
 
 /**
  * Created by SouthernBox on 2016/3/27.
@@ -34,10 +34,13 @@ import java.util.*
 class MainFragment : Fragment() {
 
     private lateinit var type: String
-    private lateinit var title: String
+    //分类标题
+    private lateinit var categoryTitle: String
     private lateinit var mAdapter: MainAdapter
-    private var pageList = ArrayList<Page>()
+    private lateinit var pageList: List<Page>
+
     private var mCmcontinue = ""
+    private val pageSize = 20
 
     companion object {
 
@@ -46,15 +49,15 @@ class MainFragment : Fragment() {
 
          * @param type  一级分类
          * *
-         *  @param title  分类标题
+         *  @param categoryTitle  分类标题
          * *
          * @return 对应的Fragment
          */
-        fun newInstance(type: String?, title: String?): MainFragment {
+        fun newInstance(type: String?, categoryTitle: String?): MainFragment {
             val fragment = MainFragment()
             val bundle = Bundle()
             bundle.putString("type", type)
-            bundle.putString("title", title)
+            bundle.putString("categoryTitle", categoryTitle)
             fragment.arguments = bundle
             return fragment
         }
@@ -64,7 +67,7 @@ class MainFragment : Fragment() {
         super.onCreate(savedInstanceState)
         val bundle = arguments
         type = bundle.getString("type")
-        title = bundle.getString("title")
+        categoryTitle = bundle.getString("categoryTitle")
     }
 
     override fun onCreateView(inflater: LayoutInflater?,
@@ -83,7 +86,13 @@ class MainFragment : Fragment() {
         //静止 item 交换位置
         layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
         recycler_view.layoutManager = layoutManager
+        //从数据库读取数据
+        val mRealm = Realm.getDefaultInstance()
+        pageList = mRealm.where(Page::class.java)
+                .contains("categories", categoryTitle)
+                .findAll()
         mAdapter = MainAdapter(activity, pageList)
+        //设置适配器
         recycler_view.adapter = mAdapter
         recycler_view.addOnScrollListener(MyScrollListener())
     }
@@ -111,29 +120,29 @@ class MainFragment : Fragment() {
         }
         val call: Call<WikiResponse>
         if (mCmcontinue.isEmpty()) {
-            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + title)
+            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle)
+            //显示缓存数据
+            mAdapter.setMaxItemCount(pageSize)
+            mAdapter.notifyItemRangeChanged(0, pageSize)
         } else {
-            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + title, mCmcontinue)
+            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle, mCmcontinue)
+            //显示缓存数据
+            val displayItemCount = mAdapter.itemCount
+            mAdapter.setMaxItemCount(mAdapter.getMaxItemCount() + pageSize)
+            mAdapter.notifyItemRangeInserted(displayItemCount, pageSize)
+            mAdapter.notifyItemRangeChanged(displayItemCount, pageSize)
         }
         call.enqueue(object : Callback<WikiResponse> {
             override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
                 val responseBody = response.body() ?: return
                 val list = responseBody.query.categorymembers
                 if (list.size > 0) {
-                    if (mCmcontinue.isEmpty()) {
-                        pageList.clear()
-                    }
-                    pageList.addAll(list)
                     var titles = ""
                     for (page in list) {
                         titles += page.title + "|"
                     }
                     titles = titles.substring(0, titles.length - 1)
-                    if (mCmcontinue.isEmpty()) {
-                        getImage(titles, false)
-                    } else {
-                        getImage(titles, true)
-                    }
+                    getImage(titles, list)
                 }
                 if (responseBody.next != null) {
                     mCmcontinue = responseBody.next.cmcontinue
@@ -152,7 +161,7 @@ class MainFragment : Fragment() {
     /**
      * 获取封面图片
      */
-    private fun getImage(titles: String, nextPage: Boolean) {
+    private fun getImage(titles: String, list: List<Page>) {
         val call = RequestUtil.wikiRequestServes.getPageImages(titles)
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
@@ -170,20 +179,29 @@ class MainFragment : Fragment() {
                     if (thumbnail != null) {
                         val title = page.optString("title")
                         val coverImg = thumbnail.optString("source")
-                        for (mPage in pageList) {
+                        for (mPage in list) {
                             if (title == mPage.title) {
                                 mPage.coverImg = coverImg
+                                if (!mPage.categories.contains(categoryTitle)) {
+                                    mPage.categories += categoryTitle + "|"
+                                }
                                 break
                             }
                         }
                     }
                 }
-                if (!nextPage) {
-                    mAdapter.notifyItemChanged(0, pageList.size)
-                } else {
-                    mAdapter.notifyItemRangeInserted(mAdapter.itemCount, pageList.size)
-                    mAdapter.notifyItemChanged(mAdapter.itemCount, pageList.size)
-                }
+
+                //保存到数据库
+                val mRealm = Realm.getDefaultInstance()
+                mRealm.beginTransaction()
+                mRealm.copyToRealmOrUpdate(list)
+                mRealm.commitTransaction()
+
+                pageList = mRealm.where(Page::class.java)
+                        .contains("categories", categoryTitle)
+                        .findAll()
+                //展示更新后的数据（最后一页）
+                mAdapter.notifyItemRangeChanged(mAdapter.itemCount - list.size, list.size)
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {

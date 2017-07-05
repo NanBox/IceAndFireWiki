@@ -69,7 +69,7 @@ class IndexActivity : BaseActivity() {
                                     response: retrofit2.Response<List<Tab>>) {
                 val tabList = response.body()
                 if (tabList != null) {
-                    //缓存到数据库
+                    //保存到数据库
                     mRealm.beginTransaction()
                     mRealm.copyToRealmOrUpdate(tabList)
                     mRealm.commitTransaction()

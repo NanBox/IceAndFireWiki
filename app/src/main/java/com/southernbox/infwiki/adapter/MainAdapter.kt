@@ -15,6 +15,7 @@ import com.bumptech.glide.request.target.GlideDrawableImageViewTarget
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.activity.DetailActivity
 import com.southernbox.infwiki.entity.Page
+import io.realm.Realm
 import kotlinx.android.synthetic.main.item_list.view.*
 
 
@@ -23,14 +24,11 @@ import kotlinx.android.synthetic.main.item_list.view.*
  * 首页列表适配器
  */
 
-class MainAdapter(content: Context, list: ArrayList<Page>) : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
+class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
 
-    val mContext: Context = content
-    var mList = ArrayList<Page>()
-
-    init {
-        mList = list
-    }
+    private val mContext: Context = content
+    private val mList: List<Page> = list
+    private var maxItemCount: Int = 20
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): MyViewHolder {
         val rootView = LayoutInflater.from(mContext).inflate(R.layout.item_list, parent, false)
@@ -49,19 +47,27 @@ class MainAdapter(content: Context, list: ArrayList<Page>) : RecyclerView.Adapte
                     .load(page.coverImg)
                     .override(page.coverImgWidth, page.coverImgHeight)
                     .crossFade()
-                    .into(holder.ivImg)
+                    .into(ImageViewTarget(page, holder))
         } else {
             Glide
                     .with(mContext)
                     .load(page.coverImg)
                     .crossFade()
-                    .into(ImageViewTarget(page, holder.ivImg))
+                    .into(ImageViewTarget(page, holder))
         }
 
         holder.itemView.setOnClickListener { _ -> onItemClick(page) }
     }
 
-    override fun getItemCount(): Int = mList.size
+    override fun getItemCount(): Int = if (mList.size > maxItemCount) maxItemCount else mList.size
+
+    fun getMaxItemCount(): Int {
+        return maxItemCount
+    }
+
+    fun setMaxItemCount(maxItemCount: Int) {
+        this.maxItemCount = maxItemCount
+    }
 
     fun onItemClick(content: Page) {
         DetailActivity.Companion.show(mContext, content.title!!)
@@ -72,19 +78,28 @@ class MainAdapter(content: Context, list: ArrayList<Page>) : RecyclerView.Adapte
         val ivName: TextView = itemView.tv_name
     }
 
-    inner class ImageViewTarget(page: Page, view: ImageView) : GlideDrawableImageViewTarget(view) {
+    inner class ImageViewTarget(page: Page, holder: MyViewHolder) : GlideDrawableImageViewTarget(holder.ivImg) {
 
-        var mPage: Page = page
+        val mPage = page
+        val mHolder = holder
 
         override fun onResourceReady(resource: GlideDrawable?, animation: GlideAnimation<in GlideDrawable>?) {
             super.onResourceReady(resource, animation)
             val viewWidth = view.measuredWidth
-            if (resource != null) {
-                val scale = viewWidth / resource.minimumWidth
-                val viewHeight = (resource.minimumHeight * scale)
-                mPage.coverImgHeight = viewHeight
-                mPage.coverImgWidth = viewWidth
+            if (resource == null || (mPage.coverImgWidth > 0 && mPage.coverImgHeight > 0)) {
+                mHolder.itemView.visibility = View.VISIBLE
+                return
             }
+            val scale = viewWidth / resource.minimumWidth
+            val viewHeight = (resource.minimumHeight * scale)
+
+            val mRealm = Realm.getDefaultInstance()
+            mRealm.beginTransaction()
+            mRealm.copyFromRealm(mPage)
+            mPage.coverImgHeight = viewHeight
+            mPage.coverImgWidth = viewWidth
+            mRealm.commitTransaction()
+            mHolder.itemView.visibility = View.VISIBLE
         }
     }
 }
