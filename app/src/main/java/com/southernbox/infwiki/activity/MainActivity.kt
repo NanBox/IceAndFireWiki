@@ -48,14 +48,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private val fragmentList = ArrayList<MainFragment>()
     private lateinit var switchCompat: SwitchCompat
     private var searchList = ArrayList<Search>()
+    private var currentFirstType = TYPE_PERSON
 
     private companion object {
         private val TYPE_PERSON = "person"
         private val TYPE_HOUSE = "house"
         private val TYPE_HISTORY = "history"
         private val TYPE_SITE = "site"
-
-        private var currentFirstType = TYPE_PERSON
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

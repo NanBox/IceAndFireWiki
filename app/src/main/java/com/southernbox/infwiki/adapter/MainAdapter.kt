@@ -77,7 +77,7 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
     }
 
     fun onItemClick(content: Page) {
-        DetailActivity.Companion.show(mContext, content.title!!)
+        DetailActivity.Companion.show(mContext, content.title)
     }
 
     inner class MyViewHolder(itemView: View) : ViewHolder(itemView) {

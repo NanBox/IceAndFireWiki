@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1029175905491",
+    "firebase_url": "https://iceandfirewiki.firebaseio.com",
+    "project_id": "iceandfirewiki",
+    "storage_bucket": "iceandfirewiki.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029175905491:android:46edc1ec17e37412",
+        "android_client_info": {
+          "package_name": "com.southernbox.infwiki"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1029175905491-cfh2v2qb7pv62o9eo7baqfksbtdb3dq8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEEw9hZPUp_-ePs5GV0hs8zkjo63gIZ6s"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

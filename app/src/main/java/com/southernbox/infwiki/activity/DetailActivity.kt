@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.google.android.gms.ads.AdRequest
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.WebData
 import com.southernbox.infwiki.util.RequestUtil
@@ -51,9 +52,36 @@ class DetailActivity : BaseActivity() {
     }
 
     private fun initView() {
+        initTheme()
+        initToolbar()
+        initAdView()
+        initWebView()
+    }
+
+    private fun initTheme() {
         val theme = mContext.theme
         val lightTextColor = TypedValue()
         theme.resolveAttribute(R.attr.lightTextColor, lightTextColor, true)
+    }
+
+    private fun initToolbar() {
+        setSupportActionBar(toolbar)
+        val actionBar = supportActionBar
+        actionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener({
+            web_view.visibility = View.GONE
+            onBackPressed()
+        })
+    }
+
+    private fun initAdView() {
+        val adRequest = AdRequest.Builder()
+//                .addTestDevice("iceandfirewiki")
+                .build()
+        ad_view.loadAd(adRequest)
+    }
+
+    private fun initWebView() {
         // 开启 DOM storage API 功能
         web_view.settings.domStorageEnabled = true
         // 开启 Application Caches 功能
@@ -75,14 +103,6 @@ class DetailActivity : BaseActivity() {
                     navigationIcon.alpha = 128
                 }
             }
-        })
-
-        setSupportActionBar(toolbar)
-        val actionBar = supportActionBar
-        actionBar?.setDisplayHomeAsUpEnabled(true)
-        toolbar.setNavigationOnClickListener({
-            web_view.visibility = View.GONE
-            onBackPressed()
         })
     }
 
@@ -196,6 +216,27 @@ class DetailActivity : BaseActivity() {
             return true
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    public override fun onPause() {
+        if (ad_view != null) {
+            ad_view.pause()
+        }
+        super.onPause()
+    }
+
+    public override fun onResume() {
+        super.onResume()
+        if (ad_view != null) {
+            ad_view.resume()
+        }
+    }
+
+    public override fun onDestroy() {
+        if (ad_view != null) {
+            ad_view.destroy()
+        }
+        super.onDestroy()
     }
 
     inner class MyWebViewClient : WebViewClient() {

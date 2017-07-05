@@ -216,7 +216,7 @@ class MainFragment : Fragment() {
                     //展示更新后的数据（最后一页）
                     mAdapter.notifyItemRangeChanged(mAdapter.itemCount - list.size, list.size)
                 } else {
-                    mAdapter.notifyDataSetChanged()
+                    mAdapter.notifyItemRangeChanged(0, mAdapter.itemCount)
                 }
             }
 

@@ -1,6 +1,5 @@
 package com.southernbox.infwiki.entity
 
-import io.reactivex.annotations.Nullable
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 
