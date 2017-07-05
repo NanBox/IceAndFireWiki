@@ -122,7 +122,7 @@ class MainFragment : Fragment() {
             return
         }
         val call: Call<WikiResponse>
-        if (mCmcontinue.isNotEmpty() || pageList.size > mAdapter.itemCount) {
+        if (mCmcontinue.isNotEmpty()) {
             call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle, mCmcontinue)
             //显示缓存数据
             val displayItemCount = mAdapter.itemCount
@@ -135,10 +135,12 @@ class MainFragment : Fragment() {
             mAdapter.setMaxItemCount(pageSize)
             mAdapter.notifyDataSetChanged()
         }
-        recycler_view.postDelayed({
-            recycler_view ?: return@postDelayed
-            recycler_view.visibility = View.VISIBLE
-        }, 700)
+        if (recycler_view.visibility != View.VISIBLE) {
+            recycler_view.postDelayed({
+                recycler_view ?: return@postDelayed
+                recycler_view.visibility = View.VISIBLE
+            }, 700)
+        }
         call.enqueue(object : Callback<WikiResponse> {
             override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
                 stopLoading()
@@ -280,7 +282,7 @@ class MainFragment : Fragment() {
 
             when (newState) {
                 RecyclerView.SCROLL_STATE_IDLE ->
-                    if (recycler_view.canScrollVertically(-1) && (mCmcontinue.isNotEmpty() || pageList.size > mAdapter.itemCount)) {
+                    if (recycler_view.canScrollVertically(-1) && mCmcontinue.isNotEmpty()) {
                         getData()
                     }
             }
