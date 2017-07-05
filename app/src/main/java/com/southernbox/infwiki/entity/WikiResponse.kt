@@ -10,7 +10,7 @@ import com.google.gson.annotations.SerializedName
 data class WikiResponse(
         @SerializedName("continue")
         val next: Continue?,
-        val query: Query
+        val query: Query?
 ) {
     data class Continue(val cmcontinue: String,
                         val sroffset: Int,

@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -77,13 +78,13 @@ class MainFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        initView()
+        initRecyclerView()
         initRefreshLayout()
     }
 
-    private fun initView() {
+    private fun initRecyclerView() {
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        //静止 item 交换位置
+        //禁止 item 交换位置
         layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
         recycler_view.layoutManager = layoutManager
         //从数据库读取数据
@@ -95,6 +96,8 @@ class MainFragment : Fragment() {
         //设置适配器
         recycler_view.adapter = mAdapter
         recycler_view.addOnScrollListener(MyScrollListener())
+        //先隐藏，延时显示列表
+        recycler_view.visibility = View.INVISIBLE
     }
 
     /**
@@ -119,27 +122,37 @@ class MainFragment : Fragment() {
             return
         }
         val call: Call<WikiResponse>
-        if (mCmcontinue.isEmpty()) {
-            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle)
-            //显示缓存数据
-            mAdapter.setMaxItemCount(pageSize)
-            mAdapter.notifyItemRangeChanged(0, pageSize)
-        } else {
+        if (mCmcontinue.isNotEmpty() || pageList.size > mAdapter.itemCount) {
             call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle, mCmcontinue)
             //显示缓存数据
             val displayItemCount = mAdapter.itemCount
             mAdapter.setMaxItemCount(mAdapter.getMaxItemCount() + pageSize)
-            mAdapter.notifyItemRangeInserted(displayItemCount, pageSize)
-            mAdapter.notifyItemRangeChanged(displayItemCount, pageSize)
+            mAdapter.notifyItemRangeInserted(displayItemCount, mAdapter.itemCount - displayItemCount)
+            mAdapter.notifyItemRangeChanged(displayItemCount, mAdapter.itemCount - displayItemCount)
+        } else {
+            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle)
+            //显示缓存数据
+            mAdapter.setMaxItemCount(pageSize)
+            mAdapter.notifyDataSetChanged()
         }
+        recycler_view.postDelayed({
+            recycler_view ?: return@postDelayed
+            recycler_view.visibility = View.VISIBLE
+        }, 700)
         call.enqueue(object : Callback<WikiResponse> {
             override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
+                stopLoading()
                 val responseBody = response.body() ?: return
-                val list = responseBody.query.categorymembers
+                Log.d("response", responseBody.toString())
+                val query = responseBody.query ?: return
+                val list = query.categorymembers
                 if (list.size > 0) {
                     var titles = ""
                     for (page in list) {
                         titles += page.title + "|"
+                        if (!page.categories.contains(categoryTitle)) {
+                            page.categories += categoryTitle + "|"
+                        }
                     }
                     titles = titles.substring(0, titles.length - 1)
                     getImage(titles, list)
@@ -166,11 +179,11 @@ class MainFragment : Fragment() {
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
                 stopLoading()
-                if (response.body() == null) {
-                    return
-                }
-                val jsonObject = JSONObject(response.body())
-                val pageObject = jsonObject.optJSONObject("query").optJSONObject("pages")
+                val responseBody = response.body() ?: return
+                Log.d("response", responseBody)
+                val jsonObject = JSONObject(responseBody)
+                val queryObject = jsonObject.optJSONObject("query") ?: return
+                val pageObject = queryObject.optJSONObject("pages") ?: return
                 val keys = pageObject.keys()
                 while (keys.hasNext()) {
                     val key = keys.next()
@@ -182,9 +195,6 @@ class MainFragment : Fragment() {
                         for (mPage in list) {
                             if (title == mPage.title) {
                                 mPage.coverImg = coverImg
-                                if (!mPage.categories.contains(categoryTitle)) {
-                                    mPage.categories += categoryTitle + "|"
-                                }
                                 break
                             }
                         }
@@ -200,8 +210,12 @@ class MainFragment : Fragment() {
                 pageList = mRealm.where(Page::class.java)
                         .contains("categories", categoryTitle)
                         .findAll()
-                //展示更新后的数据（最后一页）
-                mAdapter.notifyItemRangeChanged(mAdapter.itemCount - list.size, list.size)
+                if (mAdapter.itemCount - list.size > 0) {
+                    //展示更新后的数据（最后一页）
+                    mAdapter.notifyItemRangeChanged(mAdapter.itemCount - list.size, list.size)
+                } else {
+                    mAdapter.notifyDataSetChanged()
+                }
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
@@ -266,7 +280,7 @@ class MainFragment : Fragment() {
 
             when (newState) {
                 RecyclerView.SCROLL_STATE_IDLE ->
-                    if (recycler_view.canScrollVertically(-1) && mCmcontinue.isNotEmpty()) {
+                    if (recycler_view.canScrollVertically(-1) && (mCmcontinue.isNotEmpty() || pageList.size > mAdapter.itemCount)) {
                         getData()
                     }
             }

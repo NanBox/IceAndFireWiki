@@ -6,7 +6,6 @@
     android:layout_height="wrap_content"
     android:layout_margin="3dp"
     android:foreground="?attr/selectableItemBackground"
-    android:visibility="invisible"
     app:cardElevation="5dp">
 
     <LinearLayout

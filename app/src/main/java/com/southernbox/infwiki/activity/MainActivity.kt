@@ -108,7 +108,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
                     override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
                         val responseBody = response.body() ?: return
-                        searchList = responseBody.query.search
+                        val query = responseBody.query ?: return
+                        searchList = query.search
                         val searchTitles = Array(searchList.size, { i ->
                             var searchTitle = searchList[i].title
                             val category = searchList[i].categorysnippet

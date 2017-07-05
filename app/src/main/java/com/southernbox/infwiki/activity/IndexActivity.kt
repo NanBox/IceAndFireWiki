@@ -81,7 +81,7 @@ class IndexActivity : BaseActivity() {
             override fun onFailure(call: Call<List<Tab>>, t: Throwable) {
                 val tabList = mRealm.where(Tab::class.java).findAll()
                 //有缓存数据可正常跳转，没有则提示点击重试
-                if (tabList != null) {
+                if (tabList.size > 0) {
                     ToastUtil.show(mContext, "网络连接失败")
                     loadTabComplete = true
                     goMainPage()

@@ -125,7 +125,8 @@ class DetailActivity : BaseActivity() {
 
             override fun onResponse(call: Call<String>?, response: Response<String>) {
                 val jsonObject = JSONObject(response.body())
-                val pageObject = jsonObject.getJSONObject("query").getJSONObject("pages")
+                val queryObject = jsonObject.optJSONObject("query") ?: return
+                val pageObject = queryObject.optJSONObject("pages") ?: return
                 val keys = pageObject.keys()
                 if (keys.hasNext()) {
                     val key = keys.next()

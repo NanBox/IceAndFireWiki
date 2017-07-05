@@ -40,7 +40,16 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
 
         holder.ivName.text = page.title
 
-        //设置图片高度
+        holder.itemView.setOnClickListener { _ -> onItemClick(page) }
+
+        //无图片情况的处理
+        if (page.coverImg.isEmpty()) {
+            holder.ivImg.visibility = View.GONE
+            return
+        }
+
+        //显示图片
+        holder.ivImg.visibility = View.VISIBLE
         if (page.coverImgWidth > 0 && page.coverImgHeight > 0) {
             Glide
                     .with(mContext)
@@ -55,8 +64,6 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
                     .crossFade()
                     .into(ImageViewTarget(page, holder))
         }
-
-        holder.itemView.setOnClickListener { _ -> onItemClick(page) }
     }
 
     override fun getItemCount(): Int = if (mList.size > maxItemCount) maxItemCount else mList.size
@@ -81,13 +88,11 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
     inner class ImageViewTarget(page: Page, holder: MyViewHolder) : GlideDrawableImageViewTarget(holder.ivImg) {
 
         val mPage = page
-        val mHolder = holder
 
         override fun onResourceReady(resource: GlideDrawable?, animation: GlideAnimation<in GlideDrawable>?) {
             super.onResourceReady(resource, animation)
             val viewWidth = view.measuredWidth
             if (resource == null || (mPage.coverImgWidth > 0 && mPage.coverImgHeight > 0)) {
-                mHolder.itemView.visibility = View.VISIBLE
                 return
             }
             val scale = viewWidth / resource.minimumWidth
@@ -99,7 +104,6 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
             mPage.coverImgHeight = viewHeight
             mPage.coverImgWidth = viewWidth
             mRealm.commitTransaction()
-            mHolder.itemView.visibility = View.VISIBLE
         }
     }
 }

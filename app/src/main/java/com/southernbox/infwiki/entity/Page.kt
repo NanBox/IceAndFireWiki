@@ -1,5 +1,6 @@
 package com.southernbox.infwiki.entity
 
+import io.reactivex.annotations.Nullable
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 
@@ -10,14 +11,14 @@ import io.realm.annotations.PrimaryKey
 
 open class Page : RealmObject() {
     @PrimaryKey
-    var pageid: String? = null
-    var ns: Int? = 0
+    var pageid: String = ""
+    var ns: Int = 0
     //页面标题
-    var title: String? = null
+    var title: String = ""
     //所属分类
     var categories: String = ""
     //封面图片
-    var coverImg: String? = null
+    var coverImg: String = ""
     //封面图片宽度
     var coverImgWidth: Int = 0
     //封面图片高度

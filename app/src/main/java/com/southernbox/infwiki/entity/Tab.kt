@@ -10,7 +10,7 @@ import io.realm.annotations.PrimaryKey
 
 open class Tab : RealmObject() {
     @PrimaryKey
-    var title: String? = null
-    var type: String? = null
-    var tabTitle: String? = null
+    var title: String = ""
+    var type: String = ""
+    var tabTitle: String = ""
 }
