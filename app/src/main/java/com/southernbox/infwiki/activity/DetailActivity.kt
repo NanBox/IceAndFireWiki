@@ -13,7 +13,6 @@ import com.google.android.gms.ads.AdRequest
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.WebData
 import com.southernbox.infwiki.util.RequestUtil
-import com.southernbox.infwiki.util.ToastUtil
 import kotlinx.android.synthetic.main.activity_detail.*
 import org.json.JSONObject
 import retrofit2.Call
@@ -30,6 +29,9 @@ import java.net.URLDecoder
 class DetailActivity : BaseActivity() {
 
     var webList = ArrayList<WebData>()
+    lateinit var title: String
+    var isGetContent = false
+    var isGetImage = false
 
     companion object {
 
@@ -46,15 +48,15 @@ class DetailActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
         val bundle = intent.extras
-        val title = bundle.getString("title")
+        title = bundle.getString("title")
         initView()
-        getContent(title)
+        getContent()
+        showAd()
     }
 
     private fun initView() {
         initTheme()
         initToolbar()
-        initAdView()
         initWebView()
     }
 
@@ -72,13 +74,6 @@ class DetailActivity : BaseActivity() {
             web_view.visibility = View.GONE
             onBackPressed()
         })
-    }
-
-    private fun initAdView() {
-        val adRequest = AdRequest.Builder()
-                .addTestDevice("iceandfirewiki")
-                .build()
-        ad_view.loadAd(adRequest)
     }
 
     private fun initWebView() {
@@ -106,9 +101,10 @@ class DetailActivity : BaseActivity() {
         })
     }
 
-    private fun getContent(title: String) {
-        val call = RequestUtil.wikiRequestServes.getContent(title)
+    private fun getContent() {
+        isGetContent = true
         progress_bar.visibility = View.VISIBLE
+        val call = RequestUtil.wikiRequestServes.getContent(title)
         call.enqueue(object : Callback<String> {
 
             override fun onResponse(call: Call<String>?, response: Response<String>) {
@@ -132,15 +128,15 @@ class DetailActivity : BaseActivity() {
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
-                progress_bar.visibility = View.GONE
-                ToastUtil.show(mContext, "网络连接失败")
+                netError()
             }
         })
     }
 
-    private fun getImage(title: String) {
-        val call = RequestUtil.wikiRequestServes.getImage(title)
+    private fun getImage() {
+        isGetImage = true
         progress_bar.visibility = View.VISIBLE
+        val call = RequestUtil.wikiRequestServes.getImage(title)
         call.enqueue(object : Callback<String> {
 
             override fun onResponse(call: Call<String>?, response: Response<String>) {
@@ -165,8 +161,7 @@ class DetailActivity : BaseActivity() {
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
-                progress_bar.visibility = View.GONE
-                ToastUtil.show(mContext, "网络连接失败")
+                netError()
             }
         })
     }
@@ -209,6 +204,27 @@ class DetailActivity : BaseActivity() {
         toolbar.title = webData.title
     }
 
+    private fun showAd() {
+        val adRequest = AdRequest.Builder()
+                .addTestDevice("iceandfirewiki")
+                .build()
+        ad_view.loadAd(adRequest)
+    }
+
+    private fun netError() {
+        progress_bar.visibility = View.GONE
+        ll_error.visibility = View.VISIBLE
+        ll_error.setOnClickListener({
+            ll_error.isClickable = false
+            if (isGetContent) {
+                getContent()
+            } else if (isGetImage) {
+                getImage()
+            }
+            showAd()
+        })
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && webList.size > 1) {
             webList.removeAt(webList.lastIndex)
@@ -243,14 +259,14 @@ class DetailActivity : BaseActivity() {
 
         override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
             if (url.startsWith("file:///wiki/")) {
-                val title = URLDecoder.decode(url.substring(13), "UTF-8")
+                title = URLDecoder.decode(url.substring(13), "UTF-8")
                 if (title.startsWith("File:")) {
                     //暂时无法播放视频
                     if (!title.endsWith(".video")) {
-                        getImage(title)
+                        getImage()
                     }
                 } else {
-                    getContent(title)
+                    getContent()
                 }
             } else {
                 //使用浏览器打开
@@ -264,7 +280,10 @@ class DetailActivity : BaseActivity() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             progress_bar.visibility = View.GONE
+            ll_error.visibility = View.GONE
             web_view.visibility = View.VISIBLE
+            isGetContent = false
+            isGetImage = false
 
             if (webList.size <= 0) {
                 return

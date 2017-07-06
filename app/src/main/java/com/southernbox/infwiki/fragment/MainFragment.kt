@@ -136,7 +136,7 @@ class MainFragment : Fragment() {
             recycler_view.postDelayed({
                 recycler_view ?: return@postDelayed
                 recycler_view.visibility = View.VISIBLE
-            }, 700)
+            }, 500)
         }
         call.enqueue(object : Callback<WikiResponse> {
             override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
@@ -175,7 +175,7 @@ class MainFragment : Fragment() {
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
                 stopLoading()
-                ToastUtil.show(context, "网络连接失败")
+                ToastUtil.show(context, "网络请求失败")
             }
         })
     }
@@ -221,7 +221,7 @@ class MainFragment : Fragment() {
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
                 stopLoading()
-                ToastUtil.show(context, "网络连接失败")
+                ToastUtil.show(context, "网络请求失败")
             }
         })
     }

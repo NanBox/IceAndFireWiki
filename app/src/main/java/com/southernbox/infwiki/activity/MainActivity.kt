@@ -132,7 +132,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     }
 
                     override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
-                        ToastUtil.show(this@MainActivity, "网络连接失败")
+                        ToastUtil.show(this@MainActivity, "网络请求失败")
                     }
                 })
 
