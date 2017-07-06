@@ -10,7 +10,7 @@ import io.realm.Realm
 import io.realm.RealmConfiguration
 
 /**
- * Created by nanquan.lin on 2017/2/20 0020.
+ * Created by SouthernBox on 2017/2/20 0020.
  * Activity基类
  */
 

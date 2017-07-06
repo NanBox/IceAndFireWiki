@@ -153,10 +153,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                 mContext,
                                 searchList[position].title)
                     }
-                }, 200)
+                }, 150)
                 search_view.postDelayed({
                     clickable = true
-                }, 250)
+                }, 200)
             }
         }
     }

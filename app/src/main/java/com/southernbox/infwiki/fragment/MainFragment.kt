@@ -41,8 +41,8 @@ class MainFragment : Fragment() {
     private lateinit var mRealm: Realm
     private var pageList = ArrayList<Page>()
 
-    private var mCmcontinue = ""
     private var isFirstPage = true
+    private lateinit var mCmcontinue: String
 
     companion object {
 
@@ -71,6 +71,8 @@ class MainFragment : Fragment() {
         type = bundle.getString("type")
         categoryTitle = bundle.getString("categoryTitle")
         mRealm = Realm.getDefaultInstance()
+        isFirstPage = true
+        mCmcontinue = ""
     }
 
     override fun onCreateView(inflater: LayoutInflater?,
@@ -93,6 +95,7 @@ class MainFragment : Fragment() {
         val cacheList = mRealm.where(Page::class.java)
                 .contains("categories", categoryTitle)
                 .findAll()
+        pageList.clear()
         pageList.addAll(cacheList)
         //设置适配器
         mAdapter = MainAdapter(context, pageList)
@@ -120,7 +123,7 @@ class MainFragment : Fragment() {
      * 获取数据
      */
     private fun getData() {
-        if (isRemoving) {
+        if (!isAdded) {
             return
         }
         val call: Call<WikiResponse>
@@ -132,7 +135,7 @@ class MainFragment : Fragment() {
             mCmcontinue = ""
             isFirstPage = false
         }
-        if (recycler_view.visibility != View.VISIBLE) {
+        if (recycler_view != null && recycler_view.visibility != View.VISIBLE) {
             recycler_view.postDelayed({
                 recycler_view ?: return@postDelayed
                 recycler_view.visibility = View.VISIBLE
@@ -140,6 +143,9 @@ class MainFragment : Fragment() {
         }
         call.enqueue(object : Callback<WikiResponse> {
             override fun onResponse(call: Call<WikiResponse>?, response: Response<WikiResponse>) {
+                if (!isAdded) {
+                    return
+                }
                 stopLoading()
                 val responseBody = response.body() ?: return
                 Log.d("response", responseBody.toString())
@@ -174,6 +180,9 @@ class MainFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
+                if (!isAdded) {
+                    return
+                }
                 stopLoading()
                 ToastUtil.show(context, "网络请求失败")
             }
@@ -184,9 +193,15 @@ class MainFragment : Fragment() {
      * 获取封面图片
      */
     private fun getImage(titles: String, list: List<Page>) {
+        if (!isAdded) {
+            return
+        }
         val call = RequestUtil.wikiRequestServes.getPageImages(titles)
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
+                if (!isAdded) {
+                    return
+                }
                 stopLoading()
                 val responseBody = response.body() ?: return
                 Log.d("response", responseBody)
@@ -220,6 +235,9 @@ class MainFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
+                if (!isAdded) {
+                    return
+                }
                 stopLoading()
                 ToastUtil.show(context, "网络请求失败")
             }
@@ -227,6 +245,9 @@ class MainFragment : Fragment() {
     }
 
     private fun showPages(list: List<Page>) {
+        if (!isAdded) {
+            return
+        }
         val dataList = ArrayList<Page>()
         list.mapTo(dataList) {
             mRealm.where(Page::class.java)
