@@ -34,9 +34,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginBottom="25dp"
+                android:background="?attr/colorBackground"
                 android:gravity="center"
-                android:visibility="gone"
                 android:orientation="vertical"
+                android:visibility="gone"
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
