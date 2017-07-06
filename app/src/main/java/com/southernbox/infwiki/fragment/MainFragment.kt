@@ -38,11 +38,11 @@ class MainFragment : Fragment() {
     //分类标题
     private lateinit var categoryTitle: String
     private lateinit var mAdapter: MainAdapter
-    private lateinit var pageList: List<Page>
     private lateinit var mRealm: Realm
+    private var pageList = ArrayList<Page>()
 
     private var mCmcontinue = ""
-    private val pageSize = 50
+    private var isFirstPage = true
 
     companion object {
 
@@ -89,12 +89,13 @@ class MainFragment : Fragment() {
         //禁止 item 交换位置
         layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
         recycler_view.layoutManager = layoutManager
-        //从数据库读取数据
-        pageList = mRealm.where(Page::class.java)
+        //获取并展示缓存数据
+        val cacheList = mRealm.where(Page::class.java)
                 .contains("categories", categoryTitle)
                 .findAll()
-        mAdapter = MainAdapter(activity, pageList)
+        pageList.addAll(cacheList)
         //设置适配器
+        mAdapter = MainAdapter(context, pageList)
         recycler_view.adapter = mAdapter
         recycler_view.addOnScrollListener(MyScrollListener())
         //先隐藏，延时显示列表
@@ -123,19 +124,13 @@ class MainFragment : Fragment() {
             return
         }
         val call: Call<WikiResponse>
-        if (mCmcontinue.isNotEmpty()) {
+        if (mCmcontinue.isEmpty()) {
+            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle)
+            isFirstPage = true
+        } else {
             call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle, mCmcontinue)
             mCmcontinue = ""
-            //显示缓存数据
-            val displayItemCount = mAdapter.itemCount
-            mAdapter.setMaxItemCount(mAdapter.getMaxItemCount() + pageSize)
-            mAdapter.notifyItemRangeInserted(displayItemCount, mAdapter.itemCount - displayItemCount)
-            mAdapter.notifyItemRangeChanged(displayItemCount, mAdapter.itemCount - displayItemCount)
-        } else {
-            call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle)
-            //显示缓存数据
-            mAdapter.setMaxItemCount(pageSize)
-            mAdapter.notifyDataSetChanged()
+            isFirstPage = false
         }
         if (recycler_view.visibility != View.VISIBLE) {
             recycler_view.postDelayed({
@@ -160,6 +155,7 @@ class MainFragment : Fragment() {
                         val cachePage = mRealm.where(Page::class.java)
                                 .equalTo("pageid", page.pageid)
                                 .findFirst()
+                        //保存到数据库
                         if (cachePage == null) {
                             mRealm.beginTransaction()
                             mRealm.copyToRealmOrUpdate(page)
@@ -167,8 +163,9 @@ class MainFragment : Fragment() {
                         }
                     }
                     titles = titles.substring(0, titles.length - 1)
-                    getImage(titles)
+                    getImage(titles, list)
                 }
+                //检查是否有下一页
                 if (responseBody.next != null) {
                     mCmcontinue = responseBody.next.cmcontinue
                 } else {
@@ -186,7 +183,7 @@ class MainFragment : Fragment() {
     /**
      * 获取封面图片
      */
-    private fun getImage(titles: String) {
+    private fun getImage(titles: String, list: List<Page>) {
         val call = RequestUtil.wikiRequestServes.getPageImages(titles)
         call.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>) {
@@ -197,7 +194,6 @@ class MainFragment : Fragment() {
                 val queryObject = jsonObject.optJSONObject("query") ?: return
                 val pageObject = queryObject.optJSONObject("pages") ?: return
                 val keys = pageObject.keys()
-                val list = ArrayList<Page>()
                 while (keys.hasNext()) {
                     val key = keys.next()
                     val page = pageObject.optJSONObject(key)
@@ -217,25 +213,10 @@ class MainFragment : Fragment() {
                                 cachePage.coverImgWidth = 0
                             }
                             mRealm.commitTransaction()
-                            list.add(cachePage)
                         }
                     }
                 }
-
-                //保存到数据库
-                mRealm.beginTransaction()
-                mRealm.copyToRealmOrUpdate(list)
-                mRealm.commitTransaction()
-
-                pageList = mRealm.where(Page::class.java)
-                        .contains("categories", categoryTitle)
-                        .findAll()
-                if (mAdapter.itemCount - list.size > 0) {
-                    //展示更新后的数据（最后一页）
-                    mAdapter.notifyItemRangeChanged(mAdapter.itemCount - list.size, list.size)
-                } else {
-                    mAdapter.notifyItemRangeChanged(0, mAdapter.itemCount)
-                }
+                showPages(list)
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
@@ -243,6 +224,25 @@ class MainFragment : Fragment() {
                 ToastUtil.show(context, "网络连接失败")
             }
         })
+    }
+
+    private fun showPages(list: List<Page>) {
+        val dataList = ArrayList<Page>()
+        list.mapTo(dataList) {
+            mRealm.where(Page::class.java)
+                    .equalTo("pageid", it.pageid)
+                    .findFirst()
+        }
+        if (isFirstPage) {
+            pageList.clear()
+        }
+        pageList.addAll(dataList)
+        if (isFirstPage) {
+            mAdapter.notifyDataSetChanged()
+        } else {
+            mAdapter.notifyItemRangeInserted(mAdapter.itemCount - dataList.size, dataList.size)
+            mAdapter.notifyItemRangeChanged(mAdapter.itemCount - dataList.size, dataList.size)
+        }
     }
 
     private fun stopLoading() {

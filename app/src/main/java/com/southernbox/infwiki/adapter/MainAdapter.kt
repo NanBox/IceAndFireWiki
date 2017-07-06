@@ -28,7 +28,6 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
 
     private val mContext: Context = content
     private val mList: List<Page> = list
-    private var maxItemCount: Int = 20
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): MyViewHolder {
         val rootView = LayoutInflater.from(mContext).inflate(R.layout.item_list, parent, false)
@@ -66,15 +65,7 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
         }
     }
 
-    override fun getItemCount(): Int = if (mList.size > maxItemCount) maxItemCount else mList.size
-
-    fun getMaxItemCount(): Int {
-        return maxItemCount
-    }
-
-    fun setMaxItemCount(maxItemCount: Int) {
-        this.maxItemCount = maxItemCount
-    }
+    override fun getItemCount(): Int = mList.size
 
     fun onItemClick(content: Page) {
         DetailActivity.Companion.show(mContext, content.title)

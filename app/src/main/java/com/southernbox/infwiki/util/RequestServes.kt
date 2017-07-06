@@ -25,7 +25,7 @@ interface RequestServes {
     fun getImage(@Query("titles") title: String): Call<String>
 
     //获取分类成员页面
-    @GET("api.php?action=query&format=json&list=categorymembers&cmlimit=20&cmsort=timestamp")
+    @GET("api.php?action=query&format=json&list=categorymembers&cmlimit=50&cmsort=timestamp")
     fun getCategoryMembers(@Query("cmtitle") title: String): Call<WikiResponse>
 
     //获取下一页分类成员页面
