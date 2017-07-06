@@ -36,6 +36,7 @@
                 android:layout_marginBottom="25dp"
                 android:gravity="center"
                 android:orientation="vertical"
+                android:visibility="gone"
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
