@@ -205,9 +205,7 @@ class DetailActivity : BaseActivity() {
     }
 
     private fun showAd() {
-        val adRequest = AdRequest.Builder()
-                .addTestDevice("iceandfirewiki")
-                .build()
+        val adRequest = AdRequest.Builder().build()
         ad_view.loadAd(adRequest)
     }
 
