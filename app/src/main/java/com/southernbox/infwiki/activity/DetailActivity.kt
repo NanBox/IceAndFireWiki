@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.Page
@@ -243,10 +244,20 @@ class DetailActivity : BaseActivity() {
     private fun showAd() {
         val adRequest = AdRequest.Builder().build()
         ad_view.loadAd(adRequest)
+        //添加广告监听
+        ad_view.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                ad_view.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun netError() {
         progress_bar.visibility = View.GONE
+        //如果已经展示了缓存数据，不用再显示错误页面
+        if (webList.size > 0 && webList[webList.lastIndex].title == title) {
+            return
+        }
         ll_error.visibility = View.VISIBLE
         ll_error.setOnClickListener({
             ll_error.isClickable = false

@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorBackground">
+    android:background="?attr/colorBackground"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:navigationIcon="@drawable/ic_action_navigation_close_inverted"
+        app:titleTextColor="?attr/lightTextColor" />
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:navigationIcon="@drawable/ic_action_navigation_close_inverted"
-            app:titleTextColor="?attr/lightTextColor" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <FrameLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -27,52 +27,57 @@
                 android:id="@+id/web_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_above="@id/ad_view"
                 android:visibility="gone" />
 
-            <LinearLayout
-                android:id="@+id/ll_error"
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/ad_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="25dp"
-                android:background="?attr/colorBackground"
-                android:gravity="center"
-                android:orientation="vertical"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom"
                 android:visibility="gone"
-                tools:ignore="UseCompoundDrawables">
+                app:adSize="SMART_BANNER"
+                app:adUnitId="@string/banner_ad_unit_id" />
 
-                <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:src="@drawable/ic_error_outline"
-                    tools:ignore="ContentDescription" />
+        </RelativeLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:alpha="0.6"
-                    android:text="@string/detail_net_error"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp" />
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="40dp"
+            android:visibility="gone" />
 
-            </LinearLayout>
+        <LinearLayout
+            android:id="@+id/ll_error"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/colorBackground"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:ignore="UseCompoundDrawables">
 
-        </FrameLayout>
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/ic_error_outline"
+                tools:ignore="ContentDescription" />
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="50dp"
+                android:layout_marginTop="10dp"
+                android:alpha="0.6"
+                android:text="@string/detail_net_error"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        </LinearLayout>
 
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/ad_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:adSize="SMART_BANNER"
-        app:adUnitId="@string/banner_ad_unit_id" />
+    </FrameLayout>
 
-</FrameLayout>
+</LinearLayout>
