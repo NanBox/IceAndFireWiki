@@ -2,7 +2,10 @@ package com.southernbox.infwiki.activity
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
+import android.os.Binder.getCallingUid
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.KeyEvent
@@ -22,6 +25,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.net.URLDecoder
 
+
 /**
  * Created SouthernBox on 2016/3/27.
  * 详情页面
@@ -34,6 +38,8 @@ class DetailActivity : BaseActivity() {
     private lateinit var title: String
     var isGetContent = false
     var isGetImage = false
+
+    lateinit var locationManager: LocationManager
 
     companion object {
 
@@ -51,6 +57,7 @@ class DetailActivity : BaseActivity() {
         setContentView(R.layout.activity_detail)
         val bundle = intent.extras
         title = bundle.getString("title")
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         initView()
         getContent()
         showAd()
@@ -242,7 +249,21 @@ class DetailActivity : BaseActivity() {
     }
 
     private fun showAd() {
-        val adRequest = AdRequest.Builder().build()
+        val permission = "android.permission.ACCESS_FINE_LOCATION"
+        val adRequest: AdRequest
+        //判断是否有定位权限（其实 location 传 null 也可以）
+        if (PackageManager.PERMISSION_GRANTED ==
+                packageManager.checkPermission(permission, packageManager.getNameForUid(getCallingUid()))) {
+            var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            if (location == null) {
+                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            }
+            adRequest = AdRequest.Builder()
+                    .setLocation(location)
+                    .build()
+        } else {
+            adRequest = AdRequest.Builder().build()
+        }
         ad_view.loadAd(adRequest)
         //添加广告监听
         ad_view.adListener = object : AdListener() {
