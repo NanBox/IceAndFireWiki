@@ -70,7 +70,12 @@ class MainFragment : Fragment() {
         val bundle = arguments
         type = bundle.getString("type")
         categoryTitle = bundle.getString("categoryTitle")
-        mRealm = Realm.getDefaultInstance()
+        try {
+            mRealm = Realm.getDefaultInstance()
+        } catch (e: IllegalStateException) {
+            Realm.init(context)
+            mRealm = Realm.getDefaultInstance()
+        }
         isFirstPage = true
         mCmcontinue = ""
     }
