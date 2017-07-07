@@ -17,7 +17,7 @@
     <string name="search_hint">Search</string>
     <string name="detail_net_error">网络请求失败，请点击重试</string>
 
-    <!--<string name="banner_ad_unit_id">ca-app-pub-6097198560290118/3809227986</string>-->
+    <string name="banner_ad_unit_id">ca-app-pub-6097198560290118/3809227986</string>
     <!--测试ID-->
-    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <!--<string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>-->
 </resources>

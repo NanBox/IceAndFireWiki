@@ -214,7 +214,7 @@ class MainFragment : Fragment() {
                     val page = pageObject.optJSONObject(key)
                     val thumbnail = page.optJSONObject("thumbnail")
                     if (thumbnail != null) {
-                        val pageid = page.optString("pageid")
+                        val pageid = page.optInt("pageid")
                         val coverImg = thumbnail.optString("source")
                         val cachePage = mRealm.where(Page::class.java)
                                 .equalTo("pageid", pageid)

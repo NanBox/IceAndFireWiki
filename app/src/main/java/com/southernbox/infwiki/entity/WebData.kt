@@ -5,6 +5,6 @@ package com.southernbox.infwiki.entity
  * WebView 数据
  */
 
-data class WebData(val title: String, val data: String, var scrollY: Int, val type: Type) {
+data class WebData(val title: String, var content: String, var scrollY: Int, val type: Type) {
     enum class Type {HTML, URL }
 }

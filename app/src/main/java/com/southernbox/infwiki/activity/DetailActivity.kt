@@ -11,6 +11,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.google.android.gms.ads.AdRequest
 import com.southernbox.infwiki.R
+import com.southernbox.infwiki.entity.Page
 import com.southernbox.infwiki.entity.WebData
 import com.southernbox.infwiki.util.RequestUtil
 import kotlinx.android.synthetic.main.activity_detail.*
@@ -28,8 +29,8 @@ import java.net.URLDecoder
 @Suppress("NAME_SHADOWING")
 class DetailActivity : BaseActivity() {
 
-    var webList = ArrayList<WebData>()
-    lateinit var title: String
+    private var webList = ArrayList<WebData>()
+    private lateinit var title: String
     var isGetContent = false
     var isGetImage = false
 
@@ -104,24 +105,40 @@ class DetailActivity : BaseActivity() {
     private fun getContent() {
         isGetContent = true
         progress_bar.visibility = View.VISIBLE
+        //读取缓存
+        val cachePage = mRealm.where(Page::class.java)
+                .equalTo("title", title)
+                .findFirst()
+        if (cachePage != null && cachePage.content.isNotEmpty()) {
+            showNextContentPage(cachePage.content)
+        }
+
         val call = RequestUtil.wikiRequestServes.getContent(title)
         call.enqueue(object : Callback<String> {
 
             override fun onResponse(call: Call<String>?, response: Response<String>) {
                 val jsonObject = JSONObject(response.body())
-                val pageObject = jsonObject.getJSONObject("query").getJSONObject("pages")
+                val pageObject = jsonObject.optJSONObject("query").optJSONObject("pages")
                 val keys = pageObject.keys()
                 if (keys.hasNext()) {
                     val key = keys.next()
-                    val page = pageObject.getJSONObject(key)
-                    val htmlData = page.getJSONArray("revisions").getJSONObject(0).getString("*")
-                    if (webList.size > 0) {
-                        //保存当前页面的滚动位置
-                        val webData = webList[webList.lastIndex]
-                        webData.scrollY = web_view.scrollY
+                    val page = pageObject.optJSONObject(key)
+                    val pageid = pageObject.optInt("pageid")
+                    val content = page.optJSONArray("revisions").optJSONObject(0).optString("*")
+                    //保存到数据库
+                    mRealm.beginTransaction()
+                    if (cachePage != null) {
+                        mRealm.copyFromRealm(cachePage)
+                        cachePage.content = content
+                    } else {
+                        val newPage = Page()
+                        newPage.pageid = pageid
+                        newPage.title = title
+                        newPage.content = content
+                        mRealm.copyToRealmOrUpdate(newPage)
                     }
-                    webList.add(WebData(title, htmlData, 0, WebData.Type.HTML))
-                    showPage()
+                    mRealm.commitTransaction()
+                    showNextContentPage(content)
                 } else {
                     progress_bar.visibility = View.GONE
                 }
@@ -131,6 +148,25 @@ class DetailActivity : BaseActivity() {
                 netError()
             }
         })
+    }
+
+    private fun showNextContentPage(content: String) {
+        if (webList.size > 0) {
+            //保存当前页面的滚动位置
+            val webData = webList[webList.lastIndex]
+            webData.scrollY = web_view.scrollY
+            //检查是否已经读了缓存数据
+            if (webData.title == title) {
+                //检查和缓存数据是否相同
+                if (webData.content != content) {
+                    webData.content = content
+                    showPage()
+                }
+                return
+            }
+        }
+        webList.add(WebData(title, content, 0, WebData.Type.HTML))
+        showPage()
     }
 
     private fun getImage() {
@@ -146,8 +182,8 @@ class DetailActivity : BaseActivity() {
                 val keys = pageObject.keys()
                 if (keys.hasNext()) {
                     val key = keys.next()
-                    val page = pageObject.getJSONObject(key)
-                    val imgUrl = page.getJSONObject("thumbnail").getString("source")
+                    val page = pageObject.optJSONObject(key)
+                    val imgUrl = page.optJSONObject("thumbnail").optString("source")
                     if (webList.size > 0) {
                         //保存当前页面的滚动位置
                         val webData = webList[webList.lastIndex]
@@ -172,9 +208,9 @@ class DetailActivity : BaseActivity() {
         }
         val webData = webList[webList.lastIndex]
         if (webData.type == WebData.Type.URL) {
-            web_view.loadUrl(webData.data)
+            web_view.loadUrl(webData.content)
         } else {
-            var htmlData = webData.data
+            var htmlData = webData.content
             if (mDayNightHelper.isNight) {
                 htmlData = "<head>" +
                         "<style type=\"text/css\">" +

@@ -10,7 +10,7 @@ import io.realm.annotations.PrimaryKey
 
 open class Page : RealmObject() {
     @PrimaryKey
-    var pageid: String = ""
+    var pageid: Int = 0
     var ns: Int = 0
     //页面标题
     var title: String = ""
@@ -22,4 +22,6 @@ open class Page : RealmObject() {
     var coverImgWidth: Int = 0
     //封面图片高度
     var coverImgHeight: Int = 0
+    //页面内容
+    var content = ""
 }
