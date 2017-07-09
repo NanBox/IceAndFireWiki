@@ -151,10 +151,17 @@ class MainFragment : Fragment() {
                 if (!isAdded) {
                     return
                 }
-                stopLoading()
-                val responseBody = response.body() ?: return
+                val responseBody = response.body()
+                if (responseBody == null) {
+                    stopLoading()
+                    return
+                }
                 Log.d("response", responseBody.toString())
-                val query = responseBody.query ?: return
+                val query = responseBody.query
+                if (query == null) {
+                    stopLoading()
+                    return
+                }
                 val list = query.categorymembers
                 if (list.size > 0) {
                     var titles = ""
