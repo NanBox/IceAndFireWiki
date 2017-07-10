@@ -43,14 +43,14 @@
             android:layout_height="wrap_content"
             android:text="@string/version"
             android:textColor="?attr/darkTextColor"
-            android:textSize="12sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tv_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/darkTextColor"
-            android:textSize="12sp" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 
