@@ -1,16 +1,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/index_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorPrimary"
-    android:gravity="center">
+    android:background="?attr/colorPrimary">
 
     <TextView
         android:id="@+id/tv_index"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="225dp"
         android:text="@string/valar_morghulis"
         android:textColor="?attr/lightTextColor"
         android:textSize="36sp" />
+
+    <TextView
+        android:id="@+id/tv_support"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:text="support by 灰机 wiki"
+        android:textColor="?attr/lightTextColor"
+        android:textSize="14sp" />
 
 </RelativeLayout>

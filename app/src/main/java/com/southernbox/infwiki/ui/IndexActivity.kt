@@ -56,6 +56,7 @@ class IndexActivity : BaseActivity() {
         })
         SystemClock.sleep(200)
         tv_index.startAnimation(animation)
+        tv_support.startAnimation(animation)
         loadTabData()
     }
 
@@ -102,9 +103,9 @@ class IndexActivity : BaseActivity() {
 
     private fun netError() {
         ToastUtil.show(mContext, "网络请求失败，请点击重试")
-        tv_index.setOnClickListener({
+        index_content.setOnClickListener({
             loadTabData()
-            tv_index.isClickable = false
+            index_content.isClickable = false
         })
     }
 
