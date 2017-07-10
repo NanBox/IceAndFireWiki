@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentStatePagerAdapter
 import com.southernbox.infwiki.entity.Tab
-import com.southernbox.infwiki.fragment.MainFragment
+import com.southernbox.infwiki.ui.MainFragment
 
 /**
  * Created by SouthernBox on 2017/6/25 0025.

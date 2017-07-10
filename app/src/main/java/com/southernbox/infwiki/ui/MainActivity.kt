@@ -1,8 +1,9 @@
-package com.southernbox.infwiki.activity
+package com.southernbox.infwiki.ui
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
@@ -23,7 +24,6 @@ import com.southernbox.infwiki.adapter.MainFragmentPagerAdapter
 import com.southernbox.infwiki.entity.Search
 import com.southernbox.infwiki.entity.Tab
 import com.southernbox.infwiki.entity.WikiResponse
-import com.southernbox.infwiki.fragment.MainFragment
 import com.southernbox.infwiki.util.DayNightHelper
 import com.southernbox.infwiki.util.RequestUtil
 import com.southernbox.infwiki.util.ToastUtil
@@ -433,6 +433,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             R.id.nav_night -> {
                 val isChecked = switchCompat.isChecked
                 switchCompat.isChecked = !isChecked
+            }
+            R.id.nav_about -> {
+                startActivity(Intent(mContext, AboutActivity::class.java))
+                drawer_layout.closeDrawer(GravityCompat.START)
             }
         }
         return true

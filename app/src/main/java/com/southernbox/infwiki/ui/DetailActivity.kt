@@ -1,4 +1,4 @@
-package com.southernbox.infwiki.activity
+package com.southernbox.infwiki.ui
 
 import android.content.Context
 import android.content.Intent
@@ -76,12 +76,23 @@ class DetailActivity : BaseActivity() {
     }
 
     private fun initToolbar() {
-        setSupportActionBar(toolbar)
+        setSupportActionBar(detail_toolbar)
         val actionBar = supportActionBar
         actionBar?.setDisplayHomeAsUpEnabled(true)
-        toolbar.setNavigationOnClickListener({
+        detail_toolbar.setNavigationOnClickListener({
             web_view.visibility = View.GONE
             onBackPressed()
+        })
+        detail_toolbar.post({
+            //设置Toolbar的图标颜色
+            val navigationIcon = detail_toolbar.navigationIcon
+            if (navigationIcon != null) {
+                if (mDayNightHelper.isDay) {
+                    navigationIcon.alpha = 255
+                } else {
+                    navigationIcon.alpha = 128
+                }
+            }
         })
     }
 
@@ -96,18 +107,6 @@ class DetailActivity : BaseActivity() {
 //        web_view.settings.displayZoomControls = false
         // 重定向
         web_view.setWebViewClient(MyWebViewClient())
-
-        toolbar.post({
-            //设置Toolbar的图标颜色
-            val navigationIcon = toolbar.navigationIcon
-            if (navigationIcon != null) {
-                if (mDayNightHelper.isDay) {
-                    navigationIcon.alpha = 255
-                } else {
-                    navigationIcon.alpha = 128
-                }
-            }
-        })
     }
 
     private fun getContent() {
@@ -245,7 +244,7 @@ class DetailActivity : BaseActivity() {
                     "utf-8",
                     null)
         }
-        toolbar.title = webData.title
+        detail_toolbar.title = webData.title
     }
 
     private fun showAd() {

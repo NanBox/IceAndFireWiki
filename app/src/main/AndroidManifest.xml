@@ -16,7 +16,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity
-            android:name="com.southernbox.infwiki.activity.IndexActivity"
+            android:name="com.southernbox.infwiki.ui.IndexActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -26,10 +26,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.southernbox.infwiki.activity.MainActivity"
+            android:name="com.southernbox.infwiki.ui.MainActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.southernbox.infwiki.activity.DetailActivity"
+            android:name="com.southernbox.infwiki.ui.DetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.southernbox.infwiki.ui.AboutActivity"
             android:screenOrientation="portrait" />
     </application>
 

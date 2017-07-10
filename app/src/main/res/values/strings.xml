@@ -13,11 +13,20 @@
     <string name="history">历史</string>
     <string name="site">地理</string>
     <string name="night_mode">夜间模式</string>
+    <string name="about">关于</string>
 
     <string name="search_hint">Search</string>
     <string name="detail_net_error">网络请求失败，请点击重试</string>
 
-    <string name="banner_ad_unit_id">ca-app-pub-6097198560290118/3809227986</string>
+    <string name="about_content">关于内容</string>
+    <string name="about_me">关于我</string>
+    <string name="version">版本号： </string>
+    <string name="copyright">本程序内容来自维基平台「灰机wiki」\n十分感谢！如涉及侵权，请告知删除\n邮箱 ：k49220824@163.com</string>
+    <string name="southernbox">SouthernBox</string>
+    <string name="github">https://github.com/southernbox</string>
+
     <!--测试ID-->
     <!--<string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>-->
+    <string name="banner_ad_unit_id">ca-app-pub-6097198560290118/3809227986</string>
+
 </resources>

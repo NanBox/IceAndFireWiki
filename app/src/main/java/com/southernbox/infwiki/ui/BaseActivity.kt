@@ -1,4 +1,4 @@
-package com.southernbox.infwiki.activity
+package com.southernbox.infwiki.ui
 
 import android.annotation.SuppressLint
 import android.content.Context

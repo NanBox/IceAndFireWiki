@@ -13,7 +13,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable
 import com.bumptech.glide.request.animation.GlideAnimation
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget
 import com.southernbox.infwiki.R
-import com.southernbox.infwiki.activity.DetailActivity
+import com.southernbox.infwiki.ui.DetailActivity
 import com.southernbox.infwiki.entity.Page
 import io.realm.Realm
 import kotlinx.android.synthetic.main.item_list.view.*

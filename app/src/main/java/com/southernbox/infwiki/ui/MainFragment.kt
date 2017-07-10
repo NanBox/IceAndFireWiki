@@ -1,4 +1,4 @@
-package com.southernbox.infwiki.fragment
+package com.southernbox.infwiki.ui
 
 
 import android.os.Bundle
