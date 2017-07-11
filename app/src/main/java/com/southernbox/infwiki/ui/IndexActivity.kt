@@ -72,7 +72,8 @@ class IndexActivity : BaseActivity() {
                 if (tabList != null) {
                     //保存到数据库
                     mRealm.beginTransaction()
-                    mRealm.copyToRealmOrUpdate(tabList)
+                    mRealm.delete(Tab::class.java)
+                    mRealm.copyToRealm(tabList)
                     mRealm.commitTransaction()
                 }
                 loadTabComplete = true
