@@ -244,7 +244,7 @@ class DetailActivity : BaseActivity() {
                     "utf-8",
                     null)
         }
-        detail_toolbar.title = webData.title
+        detail_toolbar.post({ detail_toolbar.title = webData.title })
     }
 
     private fun showAd() {
