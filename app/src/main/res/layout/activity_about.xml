@@ -101,7 +101,7 @@
                 android:layout_marginLeft="5dp"
                 android:layout_marginStart="5dp"
                 android:background="#0e6eb8"
-                android:padding="5dp"
+                android:padding="10dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/huiji"
                 tools:ignore="ContentDescription" />

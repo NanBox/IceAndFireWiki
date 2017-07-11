@@ -27,5 +27,5 @@ class MainFragmentPagerAdapter(fm: FragmentManager, fragments: List<MainFragment
     override fun getCount(): Int = if (fragments != null) fragments!!.size else 0
 
     override fun getPageTitle(position: Int): CharSequence =
-            if (tabList != null) tabList!![position].tabTitle as CharSequence else ""
+            if (tabList != null) tabList!![position].tabTitle else ""
 }

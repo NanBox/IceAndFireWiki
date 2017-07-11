@@ -21,7 +21,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
-        android:text="support by 灰机 wiki"
+        android:text="@string/supported"
         android:textColor="?attr/lightTextColor"
         android:textSize="14sp" />
 

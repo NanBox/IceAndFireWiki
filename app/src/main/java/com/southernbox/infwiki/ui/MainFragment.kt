@@ -165,18 +165,25 @@ class MainFragment : Fragment() {
                 val list = query.categorymembers
                 if (list.size > 0) {
                     var titles = ""
-                    for (page in list) {
-                        titles += page.title + "|"
-                        if (!page.categories.contains(categoryTitle)) {
-                            page.categories += categoryTitle + "|"
-                        }
-                        val cachePage = mRealm.where(Page::class.java)
-                                .equalTo("pageid", page.pageid)
+                    for (responsePage in list) {
+                        var mPage = mRealm.where(Page::class.java)
+                                .equalTo("pageid", responsePage.pageid)
                                 .findFirst()
-                        //保存到数据库
-                        if (cachePage == null) {
+                        if (mPage == null) {
                             mRealm.beginTransaction()
-                            mRealm.copyToRealmOrUpdate(page)
+                            mRealm.copyToRealmOrUpdate(responsePage)
+                            mRealm.commitTransaction()
+                            mPage = mRealm.where(Page::class.java)
+                                    .equalTo("pageid", responsePage.pageid)
+                                    .findFirst()
+                        }
+                        titles += mPage.title + "|"
+                        if (!mPage.categories.contains(categoryTitle)) {
+                            //保存到数据库
+                            mRealm.beginTransaction()
+                            mRealm.copyFromRealm(mPage)
+                            mPage.categories += categoryTitle + "|"
+                            mRealm.copyToRealmOrUpdate(mPage)
                             mRealm.commitTransaction()
                         }
                     }

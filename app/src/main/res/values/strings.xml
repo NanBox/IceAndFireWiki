@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">冰与火维基</string>
+
     <string name="valar_morghulis">Valar Morghulis</string>
+    <string name="supported">supported by 灰机 wiki</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
