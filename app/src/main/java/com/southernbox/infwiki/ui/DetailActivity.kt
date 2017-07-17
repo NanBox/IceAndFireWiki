@@ -2,18 +2,15 @@ package com.southernbox.infwiki.ui
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.Uri
-import android.os.Binder.getCallingUid
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
+import com.avos.avoscloud.AVAnalytics
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.Page
 import com.southernbox.infwiki.entity.WebData
@@ -60,7 +57,6 @@ class DetailActivity : BaseActivity() {
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         initView()
         getContent()
-        showAd()
     }
 
     private fun initView() {
@@ -245,31 +241,7 @@ class DetailActivity : BaseActivity() {
                     null)
         }
         detail_toolbar.post({ detail_toolbar.title = webData.title })
-    }
-
-    private fun showAd() {
-        val permission = "android.permission.ACCESS_FINE_LOCATION"
-        val adRequest: AdRequest
-        //判断是否有定位权限（其实 location 传 null 也可以）
-        if (PackageManager.PERMISSION_GRANTED ==
-                packageManager.checkPermission(permission, packageManager.getNameForUid(getCallingUid()))) {
-            var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            if (location == null) {
-                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-            }
-            adRequest = AdRequest.Builder()
-                    .setLocation(location)
-                    .build()
-        } else {
-            adRequest = AdRequest.Builder().build()
-        }
-        ad_view.loadAd(adRequest)
-        //添加广告监听
-        ad_view.adListener = object : AdListener() {
-            override fun onAdLoaded() {
-                ad_view.visibility = View.VISIBLE
-            }
-        }
+        AVAnalytics.onEvent(mContext, webData.title)
     }
 
     private fun netError() {
@@ -286,7 +258,6 @@ class DetailActivity : BaseActivity() {
             } else if (isGetImage) {
                 getImage()
             }
-            showAd()
         })
     }
 
@@ -297,27 +268,6 @@ class DetailActivity : BaseActivity() {
             return true
         }
         return super.onKeyDown(keyCode, event)
-    }
-
-    public override fun onPause() {
-        if (ad_view != null) {
-            ad_view.pause()
-        }
-        super.onPause()
-    }
-
-    public override fun onResume() {
-        super.onResume()
-        if (ad_view != null) {
-            ad_view.resume()
-        }
-    }
-
-    public override fun onDestroy() {
-        if (ad_view != null) {
-            ad_view.destroy()
-        }
-        super.onDestroy()
     }
 
     inner class MyWebViewClient : WebViewClient() {

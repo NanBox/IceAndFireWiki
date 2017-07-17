@@ -26,28 +26,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
+        <WebView
+            android:id="@+id/web_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <WebView
-                android:id="@+id/web_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_above="@id/ad_view"
-                android:visibility="gone" />
-
-            <com.google.android.gms.ads.AdView
-                android:id="@+id/ad_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_gravity="bottom"
-                android:visibility="gone"
-                app:adSize="SMART_BANNER"
-                app:adUnitId="@string/banner_ad_unit_id" />
-
-        </RelativeLayout>
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/progress_bar"

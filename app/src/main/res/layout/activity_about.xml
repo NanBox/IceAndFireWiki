@@ -85,7 +85,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toLeftOf="@id/iv_huiji"
+                android:layout_toLeftOf="@+id/iv_huiji"
                 android:layout_toStartOf="@+id/iv_huiji"
                 android:text="@string/copyright"
                 android:textColor="?attr/darkTextColor"

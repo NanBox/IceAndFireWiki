@@ -25,6 +25,9 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import com.avos.avoscloud.AVAnalytics
+
+
 
 /**
  * Created by SouthernBox on 2016/3/27.
@@ -327,6 +330,16 @@ class MainFragment : Fragment() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        AVAnalytics.onFragmentEnd("main-fragment")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        AVAnalytics.onFragmentStart("main-fragment")
     }
 
     inner class MyScrollListener : RecyclerView.OnScrollListener() {
