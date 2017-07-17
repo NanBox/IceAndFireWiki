@@ -241,7 +241,7 @@ class DetailActivity : BaseActivity() {
                     null)
         }
         detail_toolbar.post({ detail_toolbar.title = webData.title })
-        AVAnalytics.onEvent(mContext, webData.title)
+        AVAnalytics.onEvent(mContext, "detail", webData.title)
     }
 
     private fun netError() {
@@ -281,7 +281,10 @@ class DetailActivity : BaseActivity() {
                         getImage()
                     }
                 } else {
-                    getContent()
+                    //暂时不支持展示分类
+                    if(!title.startsWith("Category:")){
+                        getContent()
+                    }
                 }
             } else {
                 //使用浏览器打开

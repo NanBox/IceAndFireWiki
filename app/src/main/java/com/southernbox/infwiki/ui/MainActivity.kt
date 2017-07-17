@@ -211,7 +211,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     /**
      * 初始化ViewPager
-
+     *
      * @param type 要展示的类型
      */
     private fun initViewPager(type: String) {
@@ -220,6 +220,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 .findAll()
         if (tabList.isNotEmpty()) {
             initFragments()
+            app_bar.view_pager.offscreenPageLimit = 2
             app_bar.view_pager.adapter = MainFragmentPagerAdapter(
                     supportFragmentManager,
                     fragmentList, tabList)
@@ -264,7 +265,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     /**
      * 获取 View 的缓存视图
-
+     *
      * @param view 对应的View
      * *
      * @return 对应View的缓存视图
