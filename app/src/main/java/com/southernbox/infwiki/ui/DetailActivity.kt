@@ -5,6 +5,7 @@ import android.content.Intent
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
@@ -120,30 +121,36 @@ class DetailActivity : BaseActivity() {
         call.enqueue(object : Callback<String> {
 
             override fun onResponse(call: Call<String>?, response: Response<String>) {
-                val jsonObject = JSONObject(response.body())
-                val pageObject = jsonObject.optJSONObject("query").optJSONObject("pages")
-                val keys = pageObject.keys()
-                if (keys.hasNext()) {
-                    val key = keys.next()
-                    val page = pageObject.optJSONObject(key)
-                    val pageid = pageObject.optInt("pageid")
-                    val content = page.optJSONArray("revisions").optJSONObject(0).optString("*")
-                    //保存到数据库
-                    mRealm.beginTransaction()
-                    if (cachePage != null) {
-                        mRealm.copyFromRealm(cachePage)
-                        cachePage.content = content
+                try {
+                    val jsonObject = JSONObject(response.body())
+                    val pageObject = jsonObject.optJSONObject("query").optJSONObject("pages")
+                    val keys = pageObject.keys()
+                    if (keys.hasNext()) {
+                        val key = keys.next()
+                        val page = pageObject.optJSONObject(key)
+                        val pageid = pageObject.optInt("pageid")
+                        val content = page.optJSONArray("revisions").optJSONObject(0).optString("*")
+                        //保存到数据库
+                        mRealm.beginTransaction()
+                        if (cachePage != null) {
+                            mRealm.copyFromRealm(cachePage)
+                            cachePage.content = content
+                        } else {
+                            val newPage = Page()
+                            newPage.pageid = pageid
+                            newPage.title = title
+                            newPage.content = content
+                            mRealm.copyToRealmOrUpdate(newPage)
+                        }
+                        mRealm.commitTransaction()
+                        showNextContentPage(content)
                     } else {
-                        val newPage = Page()
-                        newPage.pageid = pageid
-                        newPage.title = title
-                        newPage.content = content
-                        mRealm.copyToRealmOrUpdate(newPage)
+                        progress_bar.visibility = View.GONE
                     }
-                    mRealm.commitTransaction()
-                    showNextContentPage(content)
-                } else {
-                    progress_bar.visibility = View.GONE
+                } catch (e: Exception) {
+                    Log.e("解析页面信息错误", e.toString())
+                    Log.e("getContentResponse", response.body())
+                    netError()
                 }
             }
 
@@ -179,23 +186,29 @@ class DetailActivity : BaseActivity() {
         call.enqueue(object : Callback<String> {
 
             override fun onResponse(call: Call<String>?, response: Response<String>) {
-                val jsonObject = JSONObject(response.body())
-                val queryObject = jsonObject.optJSONObject("query") ?: return
-                val pageObject = queryObject.optJSONObject("pages") ?: return
-                val keys = pageObject.keys()
-                if (keys.hasNext()) {
-                    val key = keys.next()
-                    val page = pageObject.optJSONObject(key)
-                    val imgUrl = page.optJSONObject("thumbnail").optString("source")
-                    if (webList.size > 0) {
-                        //保存当前页面的滚动位置
-                        val webData = webList[webList.lastIndex]
-                        webData.scrollY = web_view.scrollY
+                try {
+                    val jsonObject = JSONObject(response.body())
+                    val queryObject = jsonObject.optJSONObject("query") ?: return
+                    val pageObject = queryObject.optJSONObject("pages") ?: return
+                    val keys = pageObject.keys()
+                    if (keys.hasNext()) {
+                        val key = keys.next()
+                        val page = pageObject.optJSONObject(key)
+                        val imgUrl = page.optJSONObject("thumbnail").optString("source")
+                        if (webList.size > 0) {
+                            //保存当前页面的滚动位置
+                            val webData = webList[webList.lastIndex]
+                            webData.scrollY = web_view.scrollY
+                        }
+                        webList.add(WebData("图片", imgUrl, 0, WebData.Type.URL))
+                        showPage()
+                    } else {
+                        progress_bar.visibility = View.GONE
                     }
-                    webList.add(WebData("图片", imgUrl, 0, WebData.Type.URL))
-                    showPage()
-                } else {
-                    progress_bar.visibility = View.GONE
+                } catch(e: Exception) {
+                    Log.e("解析图片信息错误", e.toString())
+                    Log.e("getImageResponse", response.body())
+                    netError()
                 }
             }
 
@@ -282,7 +295,7 @@ class DetailActivity : BaseActivity() {
                     }
                 } else {
                     //暂时不支持展示分类
-                    if(!title.startsWith("Category:")){
+                    if (!title.startsWith("Category:")) {
                         getContent()
                     }
                 }
