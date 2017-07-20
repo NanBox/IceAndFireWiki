@@ -254,7 +254,9 @@ class DetailActivity : BaseActivity() {
                     null)
         }
         detail_toolbar.post({ detail_toolbar.title = webData.title })
-        AVAnalytics.onEvent(mContext, "detail", webData.title)
+        if (webData.title != "图片") {
+            AVAnalytics.onEvent(mContext, "detail", webData.title)
+        }
     }
 
     private fun netError() {
