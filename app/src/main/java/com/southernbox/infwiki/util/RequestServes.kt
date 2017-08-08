@@ -21,7 +21,7 @@ interface RequestServes {
     fun getContent(@Query("titles") title: String): Call<String>
 
     //获取图片详情
-    @GET("api.php?action=query&prop=pageimages&format=json&pithumbsize=500")
+    @GET("api.php?action=query&prop=pageimages&format=json&pithumbsize=500&pilicense=any")
     fun getImage(@Query("titles") title: String): Call<String>
 
     //获取分类成员页面
