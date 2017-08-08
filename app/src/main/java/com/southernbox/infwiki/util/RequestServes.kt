@@ -33,7 +33,7 @@ interface RequestServes {
     fun getCategoryMembers(@Query("cmtitle") title: String, @Query("cmcontinue") cmcontinue: String): Call<WikiResponse>
 
     //获取页面封面
-    @GET("api.php?action=query&prop=pageimages&format=json&pithumbsize=300&pilimit=20")
+    @GET("api.php?action=query&prop=pageimages&format=json&pithumbsize=300&pilicense=any&pilimit=20")
     fun getPageImages(@Query("titles") titles: String): Call<String>
 
     //全文搜索
