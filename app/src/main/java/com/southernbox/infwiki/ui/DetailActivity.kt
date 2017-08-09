@@ -302,10 +302,14 @@ class DetailActivity : BaseActivity() {
                     }
                 }
             } else {
-                //使用浏览器打开
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse(url)
-                startActivity(intent)
+                // 尝试使用浏览器打开
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.data = Uri.parse(url)
+                    startActivity(intent)
+                } catch(e: Exception) {
+                    Log.e("浏览器跳转错误", e.toString())
+                }
             }
             return true
         }
