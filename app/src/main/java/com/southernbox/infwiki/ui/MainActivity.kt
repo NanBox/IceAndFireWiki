@@ -191,7 +191,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         val menu = navigation_view.menu
         val nightItem = menu.findItem(R.id.nav_night)
         val nightView = MenuItemCompat.getActionView(nightItem)
-        switchCompat = nightView.findViewById(R.id.switch_compat) as SwitchCompat
+        switchCompat = nightView.findViewById(R.id.switch_compat)
         //设置夜间模式开关
         switchCompat.isChecked = !mDayNightHelper.isDay
         //监听夜间模式点击事件

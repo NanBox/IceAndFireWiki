@@ -4,13 +4,13 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'realm-android'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         applicationId "com.southernbox.infwiki"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 20170808
         versionName "1.3"
     }
@@ -28,7 +28,7 @@ android {
     }
 }
 
-def SUPPORT_LIB_VERSION = '25.3.1'
+def SUPPORT_LIB_VERSION = '26.1.0'
 def RETROFIT_VERSION = '2.3.0'
 def LEANCLOUD_VERSION = '4.4.4'
 
@@ -50,7 +50,7 @@ dependencies {
     compile "com.squareup.retrofit2:converter-scalars:${RETROFIT_VERSION}"
     compile "com.squareup.retrofit2:converter-gson:${RETROFIT_VERSION}"
     // Kotlin
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.1.3-2'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.1.51'
     compile 'org.jetbrains.anko:anko-sdk25:0.10.1'
     compile 'org.jetbrains.anko:anko-appcompat-v7:0.10.1'
     // LeanCloud 统计
