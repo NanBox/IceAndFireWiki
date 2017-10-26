@@ -12,6 +12,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.avos.avoscloud.AVAnalytics
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.adapter.MainAdapter
 import com.southernbox.infwiki.entity.Page
@@ -25,8 +26,6 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.avos.avoscloud.AVAnalytics
-
 
 
 /**
@@ -73,11 +72,11 @@ class MainFragment : Fragment() {
         val bundle = arguments
         type = bundle.getString("type")
         categoryTitle = bundle.getString("categoryTitle")
-        try {
-            mRealm = Realm.getDefaultInstance()
+        mRealm = try {
+            Realm.getDefaultInstance()
         } catch (e: IllegalStateException) {
             Realm.init(context)
-            mRealm = Realm.getDefaultInstance()
+            Realm.getDefaultInstance()
         }
         isFirstPage = true
         mCmcontinue = ""
@@ -194,11 +193,7 @@ class MainFragment : Fragment() {
                     getImage(titles, list)
                 }
                 //检查是否有下一页
-                if (responseBody.next != null) {
-                    mCmcontinue = responseBody.next.cmcontinue
-                } else {
-                    mCmcontinue = ""
-                }
+                mCmcontinue = if (responseBody.next != null) responseBody.next.cmcontinue else ""
             }
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
@@ -310,7 +305,7 @@ class MainFragment : Fragment() {
         fl_content.setBackgroundResource(pagerBackground.resourceId)
         //更新Item的背景及字体颜色
         val childCount = recycler_view.childCount
-        for (position in 0..childCount - 1) {
+        for (position in 0 until childCount) {
             val item = recycler_view.getChildAt(position)
             item.ll_content.setBackgroundResource(colorBackground.resourceId)
             item.tv_name.setTextColor(
@@ -346,11 +341,6 @@ class MainFragment : Fragment() {
 
         override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
-            val layoutManager = recycler_view.layoutManager as StaggeredGridLayoutManager
-
-            //防止第一行顶部留空
-            layoutManager.invalidateSpanAssignments()
-
             when (newState) {
                 RecyclerView.SCROLL_STATE_IDLE ->
                     if (recycler_view.canScrollVertically(-1) && mCmcontinue.isNotEmpty()) {

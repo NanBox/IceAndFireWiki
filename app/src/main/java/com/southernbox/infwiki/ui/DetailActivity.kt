@@ -37,7 +37,7 @@ class DetailActivity : BaseActivity() {
     var isGetContent = false
     var isGetImage = false
 
-    lateinit var locationManager: LocationManager
+    private lateinit var locationManager: LocationManager
 
     companion object {
 
@@ -103,7 +103,7 @@ class DetailActivity : BaseActivity() {
 //        web_view.settings.builtInZoomControls = true
 //        web_view.settings.displayZoomControls = false
         // 重定向
-        web_view.setWebViewClient(MyWebViewClient())
+        web_view.webViewClient = MyWebViewClient()
     }
 
     private fun getContent() {

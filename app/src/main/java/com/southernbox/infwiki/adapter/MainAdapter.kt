@@ -7,14 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.GlideDrawable
 import com.bumptech.glide.request.animation.GlideAnimation
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget
 import com.southernbox.infwiki.R
-import com.southernbox.infwiki.ui.DetailActivity
 import com.southernbox.infwiki.entity.Page
+import com.southernbox.infwiki.ui.DetailActivity
 import io.realm.Realm
 import kotlinx.android.synthetic.main.item_list.view.*
 
@@ -67,7 +68,7 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
 
     override fun getItemCount(): Int = mList.size
 
-    fun onItemClick(content: Page) {
+    private fun onItemClick(content: Page) {
         DetailActivity.Companion.show(mContext, content.title)
     }
 
@@ -78,7 +79,8 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
 
     inner class ImageViewTarget(page: Page, holder: MyViewHolder) : GlideDrawableImageViewTarget(holder.ivImg) {
 
-        val mPage = page
+        private val ivImg = holder.ivImg
+        private val mPage = page
 
         override fun onResourceReady(resource: GlideDrawable?, animation: GlideAnimation<in GlideDrawable>?) {
             super.onResourceReady(resource, animation)
@@ -88,6 +90,9 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
             }
             val scale = viewWidth / resource.minimumWidth
             val viewHeight = (resource.minimumHeight * scale)
+
+            val params = RelativeLayout.LayoutParams(viewWidth, viewHeight)
+            ivImg.layoutParams = params
 
             val mRealm = Realm.getDefaultInstance()
             mRealm.beginTransaction()

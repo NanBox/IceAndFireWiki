@@ -37,12 +37,12 @@ open class BaseActivity : AppCompatActivity() {
         //初始化Realm
         Realm.init(this)
         val realmConfig = RealmConfiguration.Builder().build()
-        try {
-            mRealm = Realm.getInstance(realmConfig)
+        mRealm = try {
+            Realm.getInstance(realmConfig)
         } catch (e: RuntimeException) {
             //删除数据库后重新初始化
             Realm.deleteRealm(realmConfig)
-            mRealm = Realm.getInstance(realmConfig)
+            Realm.getInstance(realmConfig)
         }
     }
 
