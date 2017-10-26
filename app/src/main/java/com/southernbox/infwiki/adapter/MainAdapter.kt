@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.RelativeLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.GlideDrawable
@@ -91,7 +91,7 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Mai
             val scale = viewWidth / resource.minimumWidth
             val viewHeight = (resource.minimumHeight * scale)
 
-            val params = RelativeLayout.LayoutParams(viewWidth, viewHeight)
+            val params = LinearLayout.LayoutParams(viewWidth, viewHeight)
             ivImg.layoutParams = params
 
             val mRealm = Realm.getDefaultInstance()
