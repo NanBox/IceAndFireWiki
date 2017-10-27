@@ -33,6 +33,7 @@ def RETROFIT_VERSION = '2.3.0'
 def LEANCLOUD_VERSION = '4.4.4'
 
 dependencies {
+    implementation 'com.android.support:support-v4:26.1.0'
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'

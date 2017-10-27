@@ -2,7 +2,6 @@ package com.southernbox.infwiki.ui
 
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.RecyclerView
@@ -34,7 +33,7 @@ import retrofit2.Response
  */
 
 @Suppress("NAME_SHADOWING")
-class MainFragment : Fragment() {
+class MainFragment : BaseFragment() {
 
     private lateinit var type: String
     //分类标题
@@ -122,17 +121,16 @@ class MainFragment : Fragment() {
             getData()
         }
         swipe_refresh_layout.setOnRefreshListener(refreshListener)
-        swipe_refresh_layout.post({ getData() })
-        swipe_refresh_layout.isRefreshing = true
     }
 
     /**
      * 获取数据
      */
-    private fun getData() {
+    override fun getData() {
         if (!isAdded) {
             return
         }
+        swipe_refresh_layout.isRefreshing = true
         val call: Call<WikiResponse>
         if (mCmcontinue.isEmpty()) {
             call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle)
@@ -201,6 +199,7 @@ class MainFragment : Fragment() {
                     return
                 }
                 stopLoading()
+                mIsDataInitiated = false
                 ToastUtil.show(context, "网络请求失败")
             }
         })

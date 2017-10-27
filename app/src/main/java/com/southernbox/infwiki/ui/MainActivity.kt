@@ -223,7 +223,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     supportFragmentManager,
                     fragmentList, tabList)
 
-            app_bar.view_pager.offscreenPageLimit = 3
+            app_bar.view_pager.offscreenPageLimit = fragmentList.size - 1
             app_bar.tab_layout.setupWithViewPager(app_bar.view_pager)
         }
     }

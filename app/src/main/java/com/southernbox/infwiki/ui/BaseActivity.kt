@@ -12,7 +12,7 @@ import io.realm.RealmConfiguration
 
 /**
  * Created by SouthernBox on 2017/2/20 0020.
- * Activity基类
+ * Activity 基类
  */
 
 @SuppressLint("Registered")
