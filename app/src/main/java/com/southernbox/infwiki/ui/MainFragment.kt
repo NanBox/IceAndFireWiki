@@ -42,8 +42,14 @@ class MainFragment : BaseFragment() {
     private lateinit var mRealm: Realm
     private var pageList = ArrayList<Page>()
 
+    private var pageSize = 20
     private var isFirstPage = true
     private lateinit var mCmcontinue: String
+
+    // 分页提示文字
+    val FOOTER_TEXT_LOAD_MORE = "加载更多"
+    val FOOTER_TEXT_LOADING = "正在加载"
+    val FOOTER_TEXT_NO_MORE = "没有更多"
 
     companion object {
 
@@ -130,9 +136,9 @@ class MainFragment : BaseFragment() {
         if (!isAdded) {
             return
         }
-        swipe_refresh_layout.isRefreshing = true
         val call: Call<WikiResponse>
         if (mCmcontinue.isEmpty()) {
+            swipe_refresh_layout.isRefreshing = true
             call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle)
             isFirstPage = true
         } else {
@@ -195,12 +201,7 @@ class MainFragment : BaseFragment() {
             }
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
-                if (!isAdded) {
-                    return
-                }
-                stopLoading()
-                mIsDataInitiated = false
-                ToastUtil.show(context, "网络请求失败")
+                netError()
             }
         })
     }
@@ -248,16 +249,30 @@ class MainFragment : BaseFragment() {
                     }
                 }
                 showPages(list)
+                // 更新加载提示
+                if (mCmcontinue.isNotEmpty()) {
+                    mAdapter.setFooterText(FOOTER_TEXT_LOAD_MORE)
+                } else {
+                    mAdapter.setFooterText(FOOTER_TEXT_NO_MORE)
+                }
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
-                if (!isAdded) {
-                    return
-                }
-                stopLoading()
-                ToastUtil.show(context, "网络请求失败")
+                netError()
             }
         })
+    }
+
+    private fun netError() {
+        if (!isAdded) {
+            return
+        }
+        stopLoading()
+        mIsDataInitiated = false
+        if (pageList.size >= pageSize) {
+            mAdapter.setFooterText(FOOTER_TEXT_LOAD_MORE)
+        }
+        ToastUtil.show(context, "网络请求失败")
     }
 
     private fun showPages(list: List<Page>) {
@@ -340,13 +355,17 @@ class MainFragment : BaseFragment() {
 
         override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
+            if (mCmcontinue.isEmpty() || recyclerView == null) {
+                return
+            }
             when (newState) {
-                RecyclerView.SCROLL_STATE_IDLE ->
-                    if (recycler_view.canScrollVertically(-1) && mCmcontinue.isNotEmpty()) {
+                RecyclerView.SCROLL_STATE_IDLE -> {
+                    if (!recycler_view.canScrollVertically(1)) {
+                        mAdapter.setFooterText(FOOTER_TEXT_LOADING)
                         getData()
                     }
+                }
             }
-
         }
     }
 }
