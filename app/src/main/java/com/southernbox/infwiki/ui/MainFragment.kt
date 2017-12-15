@@ -25,8 +25,6 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.avos.avoscloud.AVAnalytics
-
 
 
 /**
@@ -73,11 +71,11 @@ class MainFragment : Fragment() {
         val bundle = arguments
         type = bundle.getString("type")
         categoryTitle = bundle.getString("categoryTitle")
-        try {
-            mRealm = Realm.getDefaultInstance()
+        mRealm = try {
+            Realm.getDefaultInstance()
         } catch (e: IllegalStateException) {
             Realm.init(context)
-            mRealm = Realm.getDefaultInstance()
+            Realm.getDefaultInstance()
         }
         isFirstPage = true
         mCmcontinue = ""
@@ -194,11 +192,7 @@ class MainFragment : Fragment() {
                     getImage(titles, list)
                 }
                 //检查是否有下一页
-                if (responseBody.next != null) {
-                    mCmcontinue = responseBody.next.cmcontinue
-                } else {
-                    mCmcontinue = ""
-                }
+                mCmcontinue = if (responseBody.next != null) responseBody.next.cmcontinue else ""
             }
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
@@ -310,7 +304,7 @@ class MainFragment : Fragment() {
         fl_content.setBackgroundResource(pagerBackground.resourceId)
         //更新Item的背景及字体颜色
         val childCount = recycler_view.childCount
-        for (position in 0..childCount - 1) {
+        for (position in 0 until childCount) {
             val item = recycler_view.getChildAt(position)
             item.ll_content.setBackgroundResource(colorBackground.resourceId)
             item.tv_name.setTextColor(
@@ -330,16 +324,6 @@ class MainFragment : Fragment() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        AVAnalytics.onFragmentEnd("main-fragment")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        AVAnalytics.onFragmentStart("main-fragment")
     }
 
     inner class MyScrollListener : RecyclerView.OnScrollListener() {

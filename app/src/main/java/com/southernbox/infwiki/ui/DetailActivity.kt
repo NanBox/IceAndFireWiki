@@ -11,7 +11,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.avos.avoscloud.AVAnalytics
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.Page
 import com.southernbox.infwiki.entity.WebData
@@ -205,7 +204,7 @@ class DetailActivity : BaseActivity() {
                     } else {
                         progress_bar.visibility = View.GONE
                     }
-                } catch(e: Exception) {
+                } catch (e: Exception) {
                     Log.e("解析图片信息错误", e.toString())
                     Log.e("getImageResponse", response.body())
                     netError()
@@ -254,9 +253,6 @@ class DetailActivity : BaseActivity() {
                     null)
         }
         detail_toolbar.post({ detail_toolbar.title = webData.title })
-        if (webData.title != "图片") {
-            AVAnalytics.onEvent(mContext, "detail", webData.title)
-        }
     }
 
     private fun netError() {
@@ -307,7 +303,7 @@ class DetailActivity : BaseActivity() {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.data = Uri.parse(url)
                     startActivity(intent)
-                } catch(e: Exception) {
+                } catch (e: Exception) {
                     Log.e("浏览器跳转错误", e.toString())
                 }
             }

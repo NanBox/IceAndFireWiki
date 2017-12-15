@@ -12,7 +12,7 @@ object BaseUrl {
     //九牛云
 //    val MY_BASE_URL = "http://op86bjpor.bkt.clouddn.com/"
 
-    val WIKI_URL = "http://asoiaf.huiji.wiki/"
+    val WIKI_URL = "http://asoiaf.huijiwiki.com/"
 //    val WIKI_URL = "http://zh.asoiaf.wikia.com/"
 
 }

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.avos.avoscloud.AVAnalytics
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.util.DayNightHelper
 import io.realm.Realm
@@ -37,23 +36,13 @@ open class BaseActivity : AppCompatActivity() {
         //初始化Realm
         Realm.init(this)
         val realmConfig = RealmConfiguration.Builder().build()
-        try {
-            mRealm = Realm.getInstance(realmConfig)
+        mRealm = try {
+            Realm.getInstance(realmConfig)
         } catch (e: RuntimeException) {
             //删除数据库后重新初始化
             Realm.deleteRealm(realmConfig)
-            mRealm = Realm.getInstance(realmConfig)
+            Realm.getInstance(realmConfig)
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        AVAnalytics.onPause(this)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        AVAnalytics.onResume(this)
     }
 
 }

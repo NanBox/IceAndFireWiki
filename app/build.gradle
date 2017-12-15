@@ -53,6 +53,4 @@ dependencies {
     compile 'org.jetbrains.kotlin:kotlin-stdlib:1.1.51'
     compile 'org.jetbrains.anko:anko-sdk25:0.10.1'
     compile 'org.jetbrains.anko:anko-appcompat-v7:0.10.1'
-    // LeanCloud 统计
-    compile "cn.leancloud.android:avoscloud-statistics:v${LEANCLOUD_VERSION}"
 }
