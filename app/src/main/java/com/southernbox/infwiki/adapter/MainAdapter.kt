@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.GlideDrawable
@@ -132,7 +131,6 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
 
     inner class ImageViewTarget(page: Page, holder: ContentViewHolder) : GlideDrawableImageViewTarget(holder.ivImg) {
 
-        private val ivImg = holder.ivImg
         private val mPage = page
 
         override fun onResourceReady(resource: GlideDrawable?, animation: GlideAnimation<in GlideDrawable>?) {
@@ -143,9 +141,6 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
             }
             val scale = viewWidth / resource.minimumWidth
             val viewHeight = (resource.minimumHeight * scale)
-
-            val params = LinearLayout.LayoutParams(viewWidth, viewHeight)
-            ivImg.layoutParams = params
 
             val mRealm = Realm.getDefaultInstance()
             mRealm.beginTransaction()
