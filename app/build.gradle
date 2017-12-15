@@ -30,9 +30,9 @@ android {
 
 def SUPPORT_LIB_VERSION = '26.1.0'
 def RETROFIT_VERSION = '2.3.0'
-def LEANCLOUD_VERSION = '4.4.4'
 
 dependencies {
+    implementation 'com.android.support:support-v4:26.1.0'
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -53,4 +53,7 @@ dependencies {
     compile 'org.jetbrains.kotlin:kotlin-stdlib:1.1.51'
     compile 'org.jetbrains.anko:anko-sdk25:0.10.1'
     compile 'org.jetbrains.anko:anko-appcompat-v7:0.10.1'
+    // RxJava
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
 }

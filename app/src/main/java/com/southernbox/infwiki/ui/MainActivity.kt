@@ -11,7 +11,6 @@ import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
-import android.support.v4.view.MenuItemCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.SwitchCompat
 import android.util.TypedValue
@@ -48,7 +47,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private val fragmentList = ArrayList<MainFragment>()
     private lateinit var switchCompat: SwitchCompat
     private var searchList = ArrayList<Search>()
-    private var currentFirstType = TYPE_PERSON
+    private var currentType = TYPE_PERSON
 
     private companion object {
         private val TYPE_PERSON = "person"
@@ -64,7 +63,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         initSearchView()
         initDrawerLayout()
         initNavigationView()
-        initViewPager(currentFirstType)
+        initViewPager(currentType)
     }
 
     /**
@@ -190,7 +189,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         val menu = navigation_view.menu
         val nightItem = menu.findItem(R.id.nav_night)
-        val nightView = MenuItemCompat.getActionView(nightItem)
+        val nightView = nightItem.actionView
         switchCompat = nightView.findViewById(R.id.switch_compat)
         //设置夜间模式开关
         switchCompat.isChecked = !mDayNightHelper.isDay
@@ -220,10 +219,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 .findAll()
         if (tabList.isNotEmpty()) {
             initFragments()
-            app_bar.view_pager.offscreenPageLimit = 2
             app_bar.view_pager.adapter = MainFragmentPagerAdapter(
                     supportFragmentManager,
                     fragmentList, tabList)
+
+            app_bar.view_pager.offscreenPageLimit = fragmentList.size - 1
             app_bar.tab_layout.setupWithViewPager(app_bar.view_pager)
         }
     }
@@ -393,40 +393,36 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return super.onOptionsItemSelected(item)
-    }
-
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_person -> {
-                if (TYPE_PERSON != currentFirstType) {
-                    currentFirstType = TYPE_PERSON
-                    initViewPager(currentFirstType)
+                if (TYPE_PERSON != currentType) {
+                    currentType = TYPE_PERSON
+                    initViewPager(currentType)
                     app_bar.main_toolbar.title = resources.getString(R.string.person)
                 }
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_house -> {
-                if (TYPE_HOUSE != currentFirstType) {
-                    currentFirstType = TYPE_HOUSE
-                    initViewPager(currentFirstType)
+                if (TYPE_HOUSE != currentType) {
+                    currentType = TYPE_HOUSE
+                    initViewPager(currentType)
                     app_bar.main_toolbar.title = resources.getString(R.string.house)
                 }
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_history -> {
-                if (TYPE_HISTORY != currentFirstType) {
-                    currentFirstType = TYPE_HISTORY
-                    initViewPager(currentFirstType)
+                if (TYPE_HISTORY != currentType) {
+                    currentType = TYPE_HISTORY
+                    initViewPager(currentType)
                     app_bar.main_toolbar.title = resources.getString(R.string.history)
                 }
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_castles -> {
-                if (TYPE_SITE != currentFirstType) {
-                    currentFirstType = TYPE_SITE
-                    initViewPager(currentFirstType)
+                if (TYPE_SITE != currentType) {
+                    currentType = TYPE_SITE
+                    initViewPager(currentType)
                     app_bar.main_toolbar.title = resources.getString(R.string.site)
                 }
                 drawer_layout.closeDrawer(GravityCompat.START)

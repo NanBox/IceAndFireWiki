@@ -2,7 +2,6 @@ package com.southernbox.infwiki.ui
 
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.RecyclerView
@@ -33,7 +32,7 @@ import retrofit2.Response
  */
 
 @Suppress("NAME_SHADOWING")
-class MainFragment : Fragment() {
+class MainFragment : BaseFragment() {
 
     private lateinit var type: String
     //分类标题
@@ -42,8 +41,14 @@ class MainFragment : Fragment() {
     private lateinit var mRealm: Realm
     private var pageList = ArrayList<Page>()
 
+    private var pageSize = 20
     private var isFirstPage = true
     private lateinit var mCmcontinue: String
+
+    // 分页提示文字
+    val FOOTER_TEXT_LOAD_MORE = "加载更多"
+    val FOOTER_TEXT_LOADING = "正在加载"
+    val FOOTER_TEXT_NO_MORE = "没有更多"
 
     companion object {
 
@@ -121,19 +126,18 @@ class MainFragment : Fragment() {
             getData()
         }
         swipe_refresh_layout.setOnRefreshListener(refreshListener)
-        swipe_refresh_layout.post({ getData() })
-        swipe_refresh_layout.isRefreshing = true
     }
 
     /**
      * 获取数据
      */
-    private fun getData() {
+    override fun getData() {
         if (!isAdded) {
             return
         }
         val call: Call<WikiResponse>
         if (mCmcontinue.isEmpty()) {
+            swipe_refresh_layout.isRefreshing = true
             call = RequestUtil.wikiRequestServes.getCategoryMembers("Category:" + categoryTitle)
             isFirstPage = true
         } else {
@@ -196,11 +200,7 @@ class MainFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
-                if (!isAdded) {
-                    return
-                }
-                stopLoading()
-                ToastUtil.show(context, "网络请求失败")
+                netError()
             }
         })
     }
@@ -248,16 +248,30 @@ class MainFragment : Fragment() {
                     }
                 }
                 showPages(list)
+                // 更新加载提示
+                if (mCmcontinue.isNotEmpty()) {
+                    mAdapter.setFooterText(FOOTER_TEXT_LOAD_MORE)
+                } else {
+                    mAdapter.setFooterText(FOOTER_TEXT_NO_MORE)
+                }
             }
 
             override fun onFailure(call: Call<String>?, t: Throwable?) {
-                if (!isAdded) {
-                    return
-                }
-                stopLoading()
-                ToastUtil.show(context, "网络请求失败")
+                netError()
             }
         })
+    }
+
+    private fun netError() {
+        if (!isAdded) {
+            return
+        }
+        stopLoading()
+        mIsDataInitiated = false
+        if (pageList.size >= pageSize) {
+            mAdapter.setFooterText(FOOTER_TEXT_LOAD_MORE)
+        }
+        ToastUtil.show(context, "网络请求失败")
     }
 
     private fun showPages(list: List<Page>) {
@@ -330,18 +344,17 @@ class MainFragment : Fragment() {
 
         override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
-            val layoutManager = recycler_view.layoutManager as StaggeredGridLayoutManager
-
-            //防止第一行顶部留空
-            layoutManager.invalidateSpanAssignments()
-
+            if (mCmcontinue.isEmpty() || recyclerView == null) {
+                return
+            }
             when (newState) {
-                RecyclerView.SCROLL_STATE_IDLE ->
-                    if (recycler_view.canScrollVertically(-1) && mCmcontinue.isNotEmpty()) {
+                RecyclerView.SCROLL_STATE_IDLE -> {
+                    if (!recycler_view.canScrollVertically(1)) {
+                        mAdapter.setFooterText(FOOTER_TEXT_LOADING)
                         getData()
                     }
+                }
             }
-
         }
     }
 }
