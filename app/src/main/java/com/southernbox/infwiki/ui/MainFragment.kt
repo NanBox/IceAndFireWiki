@@ -326,18 +326,14 @@ class MainFragment : BaseFragment() {
         }
         //让 RecyclerView 缓存在 Pool 中的 Item 失效
         val recyclerViewClass = RecyclerView::class.java
-        try {
-            val declaredField = recyclerViewClass.getDeclaredField("mRecycler")
-            declaredField.isAccessible = true
-            val declaredMethod = Class.forName(RecyclerView.Recycler::class.java.name)
-                    .getDeclaredMethod("clear")
-            declaredMethod.isAccessible = true
-            declaredMethod.invoke(declaredField.get(recycler_view))
-            val recycledViewPool = recycler_view.recycledViewPool
-            recycledViewPool.clear()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val declaredField = recyclerViewClass.getDeclaredField("mRecycler")
+        declaredField.isAccessible = true
+        val declaredMethod = Class.forName(RecyclerView.Recycler::class.java.name)
+                .getDeclaredMethod("clear")
+        declaredMethod.isAccessible = true
+        declaredMethod.invoke(declaredField.get(recycler_view))
+        val recycledViewPool = recycler_view.recycledViewPool
+        recycledViewPool.clear()
     }
 
     inner class MyScrollListener : RecyclerView.OnScrollListener() {
