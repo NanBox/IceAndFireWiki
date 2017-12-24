@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
@@ -350,23 +351,14 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
      * 刷新Toolbar图标
      */
     private fun refreshToolbarIcon() {
-        val navigationIcon = app_bar.main_toolbar.navigationIcon
-        if (navigationIcon != null) {
-            if (mDayNightHelper.isDay) {
-                navigationIcon.alpha = 255
-            } else {
-                navigationIcon.alpha = 128
-            }
-        }
-        val toolbarMenu = app_bar.main_toolbar.menu
-        val searchIcon = toolbarMenu.getItem(0).icon
-        if (searchIcon != null) {
-            if (mDayNightHelper.isDay) {
-                searchIcon.alpha = 255
-            } else {
-                searchIcon.alpha = 128
-            }
-        }
+        val lightTextColor = TypedValue()
+        theme.resolveAttribute(R.attr.lightTextColor, lightTextColor, true)
+        app_bar.main_toolbar.navigationIcon?.setColorFilter(
+                ContextCompat.getColor(mContext, lightTextColor.resourceId),
+                PorterDuff.Mode.SRC_ATOP)
+        app_bar.main_toolbar.menu.getItem(0).icon.setColorFilter(
+                ContextCompat.getColor(mContext, lightTextColor.resourceId),
+                PorterDuff.Mode.SRC_ATOP)
     }
 
     private var mExitTime: Long = 0
