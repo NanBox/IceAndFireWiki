@@ -74,8 +74,10 @@ class MainFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bundle = arguments
-        type = bundle.getString("type")
-        categoryTitle = bundle.getString("categoryTitle")
+        if (bundle != null) {
+            type = bundle.getString("type")
+            categoryTitle = bundle.getString("categoryTitle")
+        }
         mRealm = try {
             Realm.getDefaultInstance()
         } catch (e: IllegalStateException) {
@@ -86,13 +88,13 @@ class MainFragment : BaseFragment() {
         mCmcontinue = ""
     }
 
-    override fun onCreateView(inflater: LayoutInflater?,
+    override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater!!.inflate(R.layout.fragment_main, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         initRecyclerView()
         initRefreshLayout()
     }
@@ -109,7 +111,7 @@ class MainFragment : BaseFragment() {
         pageList.clear()
         pageList.addAll(cacheList)
         //设置适配器
-        mAdapter = MainAdapter(context, pageList)
+        mAdapter = MainAdapter(context!!, pageList)
         recycler_view.adapter = mAdapter
         recycler_view.addOnScrollListener(MyScrollListener())
         //先隐藏，延时显示列表
@@ -182,14 +184,16 @@ class MainFragment : BaseFragment() {
                                     .equalTo("pageid", responsePage.pageid)
                                     .findFirst()
                         }
-                        titles += mPage.title + "|"
-                        if (!mPage.categories.contains(categoryTitle)) {
-                            //保存到数据库
-                            mRealm.beginTransaction()
-                            mRealm.copyFromRealm(mPage)
-                            mPage.categories += categoryTitle + "|"
-                            mRealm.copyToRealmOrUpdate(mPage)
-                            mRealm.commitTransaction()
+                        if (mPage != null) {
+                            titles += mPage.title + "|"
+                            if (!mPage.categories.contains(categoryTitle)) {
+                                //保存到数据库
+                                mRealm.beginTransaction()
+                                mRealm.copyFromRealm(mPage)
+                                mPage.categories += categoryTitle + "|"
+                                mRealm.copyToRealmOrUpdate(mPage)
+                                mRealm.commitTransaction()
+                            }
                         }
                     }
                     titles = titles.substring(0, titles.length - 1)
@@ -271,7 +275,7 @@ class MainFragment : BaseFragment() {
         if (pageList.size >= pageSize) {
             mAdapter.setFooterText(FOOTER_TEXT_LOAD_MORE)
         }
-        ToastUtil.show(context, "网络请求失败")
+        ToastUtil.show(context!!, "网络请求失败")
     }
 
     private fun showPages(list: List<Page>) {
@@ -279,11 +283,11 @@ class MainFragment : BaseFragment() {
             return
         }
         val dataList = ArrayList<Page>()
-        list.mapTo(dataList) {
+        list.mapTo(dataList, {
             mRealm.where(Page::class.java)
                     .equalTo("pageid", it.pageid)
-                    .findFirst()
-        }
+                    .findFirst()!!
+        })
         if (isFirstPage) {
             pageList.clear()
         }
@@ -306,7 +310,7 @@ class MainFragment : BaseFragment() {
         if (!isAdded) {
             return
         }
-        val theme = context.theme
+        val theme = context!!.theme
         val pagerBackground = TypedValue()
         theme.resolveAttribute(R.attr.pagerBackground, pagerBackground, true)
         val colorBackground = TypedValue()
@@ -322,7 +326,7 @@ class MainFragment : BaseFragment() {
             val item = recycler_view.getChildAt(position)
             item.ll_content.setBackgroundResource(colorBackground.resourceId)
             item.tv_name.setTextColor(
-                    ContextCompat.getColor(context, darkTextColor.resourceId))
+                    ContextCompat.getColor(context!!, darkTextColor.resourceId))
         }
         //让 RecyclerView 缓存在 Pool 中的 Item 失效
         val recyclerViewClass = RecyclerView::class.java
