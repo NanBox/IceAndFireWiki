@@ -11,13 +11,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.Page
 import com.southernbox.infwiki.ui.DetailActivity
-import io.realm.Realm
 import kotlinx.android.synthetic.main.item_list.view.*
 import kotlinx.android.synthetic.main.view_footer.view.*
 
@@ -66,7 +64,7 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
                 val page = mList[position]
 
                 holder.ivName.text = page.title
-                holder.itemView.setOnClickListener { _ -> onItemClick(page) }
+                holder.itemView.setOnClickListener { onItemClick(page) }
 
                 //无图片情况的处理
                 if (page.coverImg.isEmpty()) {
@@ -76,20 +74,10 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
 
                 //显示图片
                 holder.ivImg.visibility = View.VISIBLE
-                val options = RequestOptions().centerCrop()
-                if (page.coverImgWidth > 0 && page.coverImgHeight > 0) {
-                    options.override(page.coverImgWidth, page.coverImgHeight)
-                    Glide
-                            .with(mContext)
-                            .load(page.coverImg)
-                            .apply(options)
-                            .into(ImageViewTarget(page, holder))
-                } else {
-                    Glide
-                            .with(mContext)
-                            .load(page.coverImg)
-                            .into(ImageViewTarget(page, holder))
-                }
+                Glide
+                        .with(mContext)
+                        .load(page.coverImg)
+                        .into(holder.ivImg)
             }
             ITEM_TYPE_FOOTER -> {
                 holder as FooterViewHolder
@@ -112,7 +100,7 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
     }
 
     private fun onItemClick(content: Page) {
-        DetailActivity.Companion.show(mContext, content.title)
+        DetailActivity.show(mContext, content.title)
     }
 
     fun setFooterText(text: String) {
@@ -129,25 +117,20 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
         val tvFooter: TextView = itemView.tv_footer
     }
 
-    inner class ImageViewTarget(page: Page, holder: ContentViewHolder) : SimpleTarget<Drawable>() {
-
-        private val mPage = page
-        private val mHolder = holder
-
-        override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-            val viewWidth = mHolder.ivImg.measuredWidth
-            if (mPage.coverImgWidth > 0 && mPage.coverImgHeight > 0) {
-                return
-            }
-            val scale = viewWidth / resource.minimumWidth
-            val viewHeight = (resource.minimumHeight * scale)
-
-            val mRealm = Realm.getDefaultInstance()
-            mRealm.beginTransaction()
-            mRealm.copyFromRealm(mPage)
-            mPage.coverImgHeight = viewHeight
-            mPage.coverImgWidth = viewWidth
-            mRealm.commitTransaction()
-        }
-    }
+//    inner class ImageViewTarget(page: Page, holder: ContentViewHolder) : SimpleTarget<Drawable>() {
+//
+//        private val mPage = page
+//        private val mHolder = holder
+//
+//        override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+//            val viewWidth = mHolder.ivImg.measuredWidth
+//            if (mPage.coverImgWidth > 0 && mPage.coverImgHeight > 0) {
+//                return
+//            }
+//            val scale = viewWidth / resource.minimumWidth
+//            val viewHeight = (resource.minimumHeight * scale)
+//            mPage.coverImgHeight = viewHeight
+//            mPage.coverImgWidth = viewWidth
+//        }
+//    }
 }

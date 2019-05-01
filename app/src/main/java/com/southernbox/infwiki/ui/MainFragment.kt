@@ -237,6 +237,14 @@ class MainFragment : BaseFragment() {
                     if (thumbnail != null) {
                         val pageid = page.optInt("pageid")
                         val coverImg = thumbnail.optString("source")
+                        for(page in list){
+                            if(page.pageid == pageid){
+                                page.coverImg = coverImg
+                                page.coverImgHeight = 0
+                                page.coverImgWidth = 0
+                                continue
+                            }
+                        }
                         val cachePage = mRealm.where(Page::class.java)
                                 .equalTo("pageid", pageid)
                                 .findFirst()
@@ -283,22 +291,11 @@ class MainFragment : BaseFragment() {
         if (!isAdded) {
             return
         }
-        val dataList = ArrayList<Page>()
-        list.mapTo(dataList) {
-            mRealm.where(Page::class.java)
-                    .equalTo("pageid", it.pageid)
-                    .findFirst()!!
-        }
         if (isFirstPage) {
             pageList.clear()
         }
-        pageList.addAll(dataList)
-        if (isFirstPage) {
-            mAdapter.notifyDataSetChanged()
-        } else {
-            mAdapter.notifyItemRangeInserted(mAdapter.itemCount - dataList.size, dataList.size)
-            mAdapter.notifyItemRangeChanged(mAdapter.itemCount - dataList.size, dataList.size)
-        }
+        pageList.addAll(list)
+        mAdapter.notifyDataSetChanged()
     }
 
     private fun stopLoading() {
