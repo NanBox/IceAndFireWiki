@@ -91,7 +91,7 @@ class MainFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater!!.inflate(R.layout.fragment_main, container, false)
+        return inflater.inflate(R.layout.fragment_main, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -205,6 +205,7 @@ class MainFragment : BaseFragment() {
 
             override fun onFailure(call: Call<WikiResponse>?, t: Throwable?) {
                 netError()
+                t!!.printStackTrace()
             }
         })
     }
@@ -283,11 +284,11 @@ class MainFragment : BaseFragment() {
             return
         }
         val dataList = ArrayList<Page>()
-        list.mapTo(dataList, {
+        list.mapTo(dataList) {
             mRealm.where(Page::class.java)
                     .equalTo("pageid", it.pageid)
                     .findFirst()!!
-        })
+        }
         if (isFirstPage) {
             pageList.clear()
         }
@@ -342,9 +343,9 @@ class MainFragment : BaseFragment() {
 
     inner class MyScrollListener : RecyclerView.OnScrollListener() {
 
-        override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
-            if (mCmcontinue.isEmpty() || recyclerView == null) {
+            if (mCmcontinue.isEmpty()) {
                 return
             }
             when (newState) {

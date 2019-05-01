@@ -1,6 +1,7 @@
 package com.southernbox.infwiki.adapter
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.RecyclerView.ViewHolder
 import android.support.v7.widget.StaggeredGridLayoutManager
@@ -10,9 +11,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.GlideDrawable
-import com.bumptech.glide.request.animation.GlideAnimation
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.transition.Transition
 import com.southernbox.infwiki.R
 import com.southernbox.infwiki.entity.Page
 import com.southernbox.infwiki.ui.DetailActivity
@@ -37,26 +38,25 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
     private val ITEM_TYPE_CONTENT = 1
     private val ITEM_TYPE_FOOTER = 2
 
-    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder?) {
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         super.onViewAttachedToWindow(holder)
-        if (holder != null && holder.layoutPosition >= itemCount - 1) {
+        if (holder.layoutPosition >= itemCount - 1) {
             val params = holder.itemView.layoutParams as StaggeredGridLayoutManager.LayoutParams
             params.isFullSpan = true
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder? {
-        when (viewType) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return when (viewType) {
             ITEM_TYPE_CONTENT -> {
                 val rootView = LayoutInflater.from(mContext).inflate(R.layout.item_list, parent, false)
-                return ContentViewHolder(rootView)
+                ContentViewHolder(rootView)
             }
-            ITEM_TYPE_FOOTER -> {
+            else -> {
                 val rootView = LayoutInflater.from(mContext).inflate(R.layout.view_footer, parent, false)
-                return FooterViewHolder(rootView)
+                FooterViewHolder(rootView)
             }
         }
-        return null
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -76,18 +76,18 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
 
                 //显示图片
                 holder.ivImg.visibility = View.VISIBLE
+                val options = RequestOptions().centerCrop()
                 if (page.coverImgWidth > 0 && page.coverImgHeight > 0) {
+                    options.override(page.coverImgWidth, page.coverImgHeight)
                     Glide
                             .with(mContext)
                             .load(page.coverImg)
-                            .override(page.coverImgWidth, page.coverImgHeight)
-                            .crossFade()
+                            .apply(options)
                             .into(ImageViewTarget(page, holder))
                 } else {
                     Glide
                             .with(mContext)
                             .load(page.coverImg)
-                            .crossFade()
                             .into(ImageViewTarget(page, holder))
                 }
             }
@@ -129,14 +129,14 @@ class MainAdapter(content: Context, list: List<Page>) : RecyclerView.Adapter<Vie
         val tvFooter: TextView = itemView.tv_footer
     }
 
-    inner class ImageViewTarget(page: Page, holder: ContentViewHolder) : GlideDrawableImageViewTarget(holder.ivImg) {
+    inner class ImageViewTarget(page: Page, holder: ContentViewHolder) : SimpleTarget<Drawable>() {
 
         private val mPage = page
+        private val mHolder = holder
 
-        override fun onResourceReady(resource: GlideDrawable?, animation: GlideAnimation<in GlideDrawable>?) {
-            super.onResourceReady(resource, animation)
-            val viewWidth = view.measuredWidth
-            if (resource == null || (mPage.coverImgWidth > 0 && mPage.coverImgHeight > 0)) {
+        override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+            val viewWidth = mHolder.ivImg.measuredWidth
+            if (mPage.coverImgWidth > 0 && mPage.coverImgHeight > 0) {
                 return
             }
             val scale = viewWidth / resource.minimumWidth

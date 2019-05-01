@@ -51,10 +51,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private var currentType = TYPE_PERSON
 
     private companion object {
-        private val TYPE_PERSON = "person"
-        private val TYPE_HOUSE = "house"
-        private val TYPE_HISTORY = "history"
-        private val TYPE_SITE = "site"
+        private const val TYPE_PERSON = "person"
+        private const val TYPE_HOUSE = "house"
+        private const val TYPE_HISTORY = "history"
+        private const val TYPE_SITE = "site"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,11 +73,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private fun initToolbar() {
         setSupportActionBar(app_bar.main_toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        app_bar.main_toolbar.post({
-            //设置Toolbar的标题及图标颜色
+        app_bar.main_toolbar.post {
+            // 设置 Toolbar 的标题及图标颜色
             app_bar.main_toolbar.title = resources.getString(R.string.person)
             refreshToolbarIcon()
-        })
+        }
     }
 
     /**
@@ -109,7 +109,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         val responseBody = response.body() ?: return
                         val query = responseBody.query ?: return
                         searchList = query.search
-                        val searchTitles = Array(searchList.size, { i ->
+                        val searchTitles = Array(searchList.size) { i ->
                             var searchTitle = searchList[i].title
                             val category = searchList[i].categorysnippet
                             if (category != null && category.isNotEmpty()) {
@@ -126,7 +126,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                 searchTitle += " 「$section」章节"
                             }
                             searchTitle
-                        })
+                        }
                         search_view.setSuggestions(searchTitles)
                         search_view.showSuggestions()
                     }

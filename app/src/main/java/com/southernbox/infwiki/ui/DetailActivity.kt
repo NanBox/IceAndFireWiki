@@ -1,5 +1,6 @@
 package com.southernbox.infwiki.ui
 
+import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
@@ -9,6 +10,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.southernbox.infwiki.R
@@ -282,6 +284,11 @@ class DetailActivity : BaseActivity() {
     }
 
     inner class MyWebViewClient : WebViewClient() {
+
+        @TargetApi(21)
+        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+            return shouldOverrideUrlLoading(view!!, request!!.url.toString())
+        }
 
         override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
             if (url.startsWith("file:///wiki/")) {
